@@ -81,47 +81,79 @@
       }
     }
 
-    .cta {
-      color: #808492;
-      font-size: 16px;
-      line-height: 1.3;
-      text-align: center;
-      /* animation: pulse 2s infinite; */
-      animation: fadeIn 3s ease-in-out;
-      font-family: 'Arial', sans-serif;
+    /* Bottom-left: the EP, its songs, Bandcamp, socials */
+    .info {
+      position: fixed;
+      left: clamp(20px, 5vw, 80px);
+      bottom: clamp(20px, 5vw, 80px);
       z-index: 1;
+      display: grid;
+      gap: 20px;
+      max-width: min(460px, calc(100vw - 40px));
+      font-family: 'Arial', sans-serif;
+      animation: fadeIn 3s ease-in-out;
     }
 
-    .cta a {
+    .eyebrow {
+      color: #808492;
+      font-size: 13px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+    }
+
+    .tracks {
+      list-style: none;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 18px;
+      color: #c9d3e3;
+      font-size: 15px;
+    }
+
+    .tracks button {
+      all: unset;
+      cursor: pointer;
+      transition: color 0.3s;
+    }
+
+    .tracks button:hover,
+    .tracks button[aria-current="true"] {
       color: #6693C8;
+    }
+
+    .tracks button:focus-visible {
+      outline: 1px solid #6693C8;
+      outline-offset: 4px;
+    }
+
+    .tracks span {
+      margin-right: 5px;
+      color: #808492;
+      font-size: 11px;
+    }
+
+    .listen {
+      justify-self: start;
+      padding: 12px 22px;
+      border: 1px solid #6693C8;
+      border-radius: 30px;
+      color: #6693C8;
+      font-size: 14px;
+      text-decoration: none;
       transition: all 0.3s;
     }
 
-    .cta a:hover {
-      color: #fff;
-    }
-
-    @media (min-width: 1024px) {
-      .cta {
-        font-size: 19px;
-        line-height: 1.5;
-      }
-    }
-
-    .social-media-container {
-      width: 100%;
-      z-index: 1;
-      /* animation: slideUp 2s ease-in-out; */
-      animation: fadeIn 3s ease-in-out;
+    .listen:hover {
+      background: #6693C8;
+      color: #0b0d14;
     }
 
     .social-media {
       display: flex;
-      justify-content: center;
     }
 
     .social-media a {
-      margin: 0 10px;
+      margin-right: 14px;
       transition: transform 0.2s;
     }
 
@@ -130,8 +162,8 @@
     }
 
     .social-media svg {
-      width: 40px;
-      height: 40px;
+      width: 34px;
+      height: 34px;
       fill: #6693C8;
       transition: fill 0.2s;
     }
@@ -324,7 +356,28 @@
       transform: scaleX(var(--progress, 0));
     }
 
+    /* Short screens: lift the logo so it clears the songs in the bottom-left */
+    @media (min-width: 700px) and (max-height: 800px) {
+      body {
+        justify-content: flex-start;
+        padding-top: 5vh;
+      }
+
+      .logo {
+        max-width: min(1100px, 100vh);
+      }
+
+      .arrow .label {
+        display: none;
+      }
+    }
+
     @media (max-width: 699px) {
+      body {
+        justify-content: flex-start;
+        padding-top: max(110px, 14vh);
+      }
+
       .player {
         left: 16px;
         right: 16px;
@@ -332,9 +385,23 @@
         width: auto;
       }
 
+      .info {
+        left: 16px;
+        bottom: calc(84px + env(safe-area-inset-bottom));
+        gap: 16px;
+      }
+
+      .tracks {
+        font-size: 14px;
+      }
+
+      .social-media svg {
+        width: 30px;
+        height: 30px;
+      }
+
       .arrow {
-        top: auto;
-        bottom: calc(80px + env(safe-area-inset-bottom));
+        top: calc(8px + env(safe-area-inset-top));
         left: 4px;
         transform: none;
       }
@@ -411,21 +478,31 @@
       <img src="text-bg-2.webp" class="universe" alt="Batter The Drag Mask">
     </div>
   </div>
-  <div class="cta">Listen to the new EP <br><a href="https://batterthedrag.bandcamp.com/album/the-universe-is-ours" target="_blank">The Universe Is Ours</a></div>
-  <div class="social-media-container">
-    <div class="social-media">
-      <a href="https://batterthedrag.bandcamp.com/album/the-universe-is-ours" target="_blank" aria-label="Bandcamp">
-        <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" x="0" y="0" viewBox="0 0 682.7 682.7" style="enable-background:new 0 0 682.7 682.7" xml:space="preserve"><style>.st0{fill:#fff}</style><path d="M682.6 341.3C682.6 152.8 529.8 0 341.3 0S0 152.8 0 341.3s152.8 341.3 341.3 341.3 341.3-152.7 341.3-341.3zm-240.8 96.6c-17.8 0-37-4.5-45.6-22.4h-.5v18.7h-27.5v-188L266.5 433.8h-218l101.8-187.9h246.9v69.6h.5c7.9-13.2 24.5-21.4 39.3-21.4 41.5 0 61.7 32.7 61.7 72.5 0 36.7-17.9 71.3-56.9 71.3zm68.7-70.4c0-41.1 21.7-73.3 65-73.3 30.6 0 56.6 15.8 59.4 49.3h-29c-2.3-16.6-14-25.6-30.1-25.6-15 0-36.2 8.2-36.2 49.6 0 22.7 9.7 46.7 34.9 46.7 16.8 0 28.5-11.6 31.4-31.1H635c-5.4 35.3-26.5 54.9-60.4 54.9-41.4-.1-64.1-30.4-64.1-70.5z"/><path d="M433.1 317.9c-24.5 0-37 19.3-37 48.3 0 27.4 13.5 48 37 48 26.5 0 36.5-24.3 36.5-48 0-24.8-12.5-48.3-36.5-48.3z"/><path class="st0" d="M433.1 317.9z"/><path d="M433.1 414.2c-23.4 0-37-20.6-37-48 0-29 12.5-48.3 37-48.3 24 0 36.4 23.5 36.5 48.3 0 23.7-10 48-36.5 48z"/><path class="st0" d="M368.1 245.9v.3l.2-.3z"/></svg>
-      </a>
-      <a href="https://open.spotify.com/artist/7n0isdj3K0MwurrqOzG4f8" target="_blank" aria-label="Spotify">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" style="enable-background:new 0 0 20 20" xml:space="preserve"><path d="M15.9 8.9C12.7 7 7.4 6.8 4.3 7.8c-.5.1-1-.1-1.2-.6-.1-.6.2-1.1.7-1.2 3.6-1.1 9.4-.8 13.1 1.4.4.2.6.8.4 1.3-.3.3-.9.4-1.4.2m-.1 2.8c-.2.4-.7.5-1 .2-2.7-1.6-6.8-2.1-9.9-1.1-.4.1-.9-.1-1-.5-.1-.4 0-.9.4-.9 3.7-1.1 8.1-.6 11.2 1.3.4.2.5.7.3 1m-1.2 2.8c-.2.3-.6.4-.9.2-2.4-1.4-5.3-1.8-8.8-.9-.3.1-.6-.1-.8-.4-.1-.4.2-.6.5-.8 3.8-.9 7.1-.5 9.7 1.1.4.1.5.4.3.8M10 0C4.5 0 0 4.5 0 10s4.5 10 10 10 10-4.5 10-10S15.5 0 10 0z"/></svg>
-      </a>
-      <a href="https://www.instagram.com/batterthedrag/" target="_blank" aria-label="Instagram">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1146.6 1146.6" style="enable-background:new 0 0 1146.6 1146.6" xml:space="preserve"><path d="M788.3 358.3h-95.5v95.6h95.5zM573.3 671.3c52.6 0 97.9-43 97.9-97.9 0-21.5-7.2-40.6-19.1-57.3-16.7-23.9-47.8-40.6-78.8-40.6-31.1 0-62.1 16.7-78.8 40.6-11.9 16.7-19.1 35.8-19.1 57.3 0 54.9 45.4 97.9 97.9 97.9z"/><path d="M573.3 0C256.7 0 0 256.7 0 573.3s256.7 573.3 573.3 573.3 573.3-256.7 573.3-573.3S890 0 573.3 0zm279.5 745.3c0 59.7-47.8 107.5-107.5 107.5h-344c-59.7 0-107.5-47.8-107.5-107.5v-344c0-59.7 47.8-107.5 107.5-107.5h344c59.7 0 107.5 47.8 107.5 107.5v344z"/><path d="M714.3 516c7.2 16.7 11.9 38.2 11.9 57.3 0 83.6-69.3 152.9-152.9 152.9-83.6 0-152.9-69.3-152.9-152.9 0-19.1 4.8-40.6 11.9-57.3h-83.6v229.3c0 28.7 23.9 52.6 52.6 52.6h344c28.7 0 52.6-23.9 52.6-52.6V516h-83.6z"/></svg>
-      </a>
-      <a href="https://www.facebook.com/batterthedrag" target="_blank" aria-label="Facebook">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 19.9" style="enable-background:new 0 0 20 19.9" xml:space="preserve"><path d="M10 0C4.5 0 0 4.5 0 10c0 5 3.7 9.1 8.4 9.9v-7H5.9V10h2.5V7.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V10h2.8l-.4 2.9h-2.3v7c4.9-.8 8.5-5 8.4-9.9 0-5.5-4.5-10-10-10z"/></svg>
-      </a>
+  <div class="info">
+    <p class="eyebrow">The Universe Is Ours EP</p>
+    <ol class="tracks">
+      <li><button type="button" data-track="0"><span>1</span>Brutal Future</button></li>
+      <li><button type="button" data-track="1"><span>2</span>Ghost Parasite</button></li>
+      <li><button type="button" data-track="2"><span>3</span>Frozen Shoulder</button></li>
+      <li><button type="button" data-track="3"><span>4</span>Human Adjacent</button></li>
+      <li><button type="button" data-track="4"><span>5</span>Outsourced Thought</button></li>
+    </ol>
+    <a class="listen" href="https://batterthedrag.bandcamp.com/album/the-universe-is-ours" target="_blank" rel="noopener">Listen on Bandcamp</a>
+    <div class="social-media-container">
+      <div class="social-media">
+        <a href="https://batterthedrag.bandcamp.com/album/the-universe-is-ours" target="_blank" aria-label="Bandcamp">
+          <svg version="1.1" xmlns="http://www.w3.org/2000/svg" x="0" y="0" viewBox="0 0 682.7 682.7" style="enable-background:new 0 0 682.7 682.7" xml:space="preserve"><style>.st0{fill:#fff}</style><path d="M682.6 341.3C682.6 152.8 529.8 0 341.3 0S0 152.8 0 341.3s152.8 341.3 341.3 341.3 341.3-152.7 341.3-341.3zm-240.8 96.6c-17.8 0-37-4.5-45.6-22.4h-.5v18.7h-27.5v-188L266.5 433.8h-218l101.8-187.9h246.9v69.6h.5c7.9-13.2 24.5-21.4 39.3-21.4 41.5 0 61.7 32.7 61.7 72.5 0 36.7-17.9 71.3-56.9 71.3zm68.7-70.4c0-41.1 21.7-73.3 65-73.3 30.6 0 56.6 15.8 59.4 49.3h-29c-2.3-16.6-14-25.6-30.1-25.6-15 0-36.2 8.2-36.2 49.6 0 22.7 9.7 46.7 34.9 46.7 16.8 0 28.5-11.6 31.4-31.1H635c-5.4 35.3-26.5 54.9-60.4 54.9-41.4-.1-64.1-30.4-64.1-70.5z"/><path d="M433.1 317.9c-24.5 0-37 19.3-37 48.3 0 27.4 13.5 48 37 48 26.5 0 36.5-24.3 36.5-48 0-24.8-12.5-48.3-36.5-48.3z"/><path class="st0" d="M433.1 317.9z"/><path d="M433.1 414.2c-23.4 0-37-20.6-37-48 0-29 12.5-48.3 37-48.3 24 0 36.4 23.5 36.5 48.3 0 23.7-10 48-36.5 48z"/><path class="st0" d="M368.1 245.9v.3l.2-.3z"/></svg>
+        </a>
+        <a href="https://open.spotify.com/artist/7n0isdj3K0MwurrqOzG4f8" target="_blank" aria-label="Spotify">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" style="enable-background:new 0 0 20 20" xml:space="preserve"><path d="M15.9 8.9C12.7 7 7.4 6.8 4.3 7.8c-.5.1-1-.1-1.2-.6-.1-.6.2-1.1.7-1.2 3.6-1.1 9.4-.8 13.1 1.4.4.2.6.8.4 1.3-.3.3-.9.4-1.4.2m-.1 2.8c-.2.4-.7.5-1 .2-2.7-1.6-6.8-2.1-9.9-1.1-.4.1-.9-.1-1-.5-.1-.4 0-.9.4-.9 3.7-1.1 8.1-.6 11.2 1.3.4.2.5.7.3 1m-1.2 2.8c-.2.3-.6.4-.9.2-2.4-1.4-5.3-1.8-8.8-.9-.3.1-.6-.1-.8-.4-.1-.4.2-.6.5-.8 3.8-.9 7.1-.5 9.7 1.1.4.1.5.4.3.8M10 0C4.5 0 0 4.5 0 10s4.5 10 10 10 10-4.5 10-10S15.5 0 10 0z"/></svg>
+        </a>
+        <a href="https://www.instagram.com/batterthedrag/" target="_blank" aria-label="Instagram">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1146.6 1146.6" style="enable-background:new 0 0 1146.6 1146.6" xml:space="preserve"><path d="M788.3 358.3h-95.5v95.6h95.5zM573.3 671.3c52.6 0 97.9-43 97.9-97.9 0-21.5-7.2-40.6-19.1-57.3-16.7-23.9-47.8-40.6-78.8-40.6-31.1 0-62.1 16.7-78.8 40.6-11.9 16.7-19.1 35.8-19.1 57.3 0 54.9 45.4 97.9 97.9 97.9z"/><path d="M573.3 0C256.7 0 0 256.7 0 573.3s256.7 573.3 573.3 573.3 573.3-256.7 573.3-573.3S890 0 573.3 0zm279.5 745.3c0 59.7-47.8 107.5-107.5 107.5h-344c-59.7 0-107.5-47.8-107.5-107.5v-344c0-59.7 47.8-107.5 107.5-107.5h344c59.7 0 107.5 47.8 107.5 107.5v344z"/><path d="M714.3 516c7.2 16.7 11.9 38.2 11.9 57.3 0 83.6-69.3 152.9-152.9 152.9-83.6 0-152.9-69.3-152.9-152.9 0-19.1 4.8-40.6 11.9-57.3h-83.6v229.3c0 28.7 23.9 52.6 52.6 52.6h344c28.7 0 52.6-23.9 52.6-52.6V516h-83.6z"/></svg>
+        </a>
+        <a href="https://www.facebook.com/batterthedrag" target="_blank" aria-label="Facebook">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 19.9" style="enable-background:new 0 0 20 19.9" xml:space="preserve"><path d="M10 0C4.5 0 0 4.5 0 10c0 5 3.7 9.1 8.4 9.9v-7H5.9V10h2.5V7.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V10h2.8l-.4 2.9h-2.3v7c4.9-.8 8.5-5 8.4-9.9 0-5.5-4.5-10-10-10z"/></svg>
+        </a>
+      </div>
     </div>
   </div>
   <a class="arrow" href="./" data-prev>
@@ -439,7 +516,7 @@
       <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4.5h4v15H6zM14 4.5h4v15h-4z"/></svg>
     </button>
     <div class="player-meta">
-      <span class="player-title">Human Adjacent</span>
+      <span class="player-title" aria-live="polite">Human Adjacent</span>
       <span class="player-progress" aria-hidden="true"><span></span></span>
     </div>
   </div>
@@ -448,12 +525,21 @@
       function store(key, value) { try { sessionStorage.setItem(key, value); } catch (e) {} }
       function recall(key) { try { return sessionStorage.getItem(key); } catch (e) { return null; } }
 
-      // ---------- Sound: Human Adjacent on loop ----------
-      var audio = new Audio('audio/human-adjacent.mp3');
+      // ---------- Sound: the EP, starting on Human Adjacent ----------
+      var TRACKS = [
+        { title: 'Brutal Future', src: 'audio/brutal-future.mp3' },
+        { title: 'Ghost Parasite', src: 'audio/ghost-parasite.mp3' },
+        { title: 'Frozen Shoulder', src: 'audio/frozen-shoulder.mp3' },
+        { title: 'Human Adjacent', src: 'audio/human-adjacent.mp3' },
+        { title: 'Outsourced Thought', src: 'audio/outsourced-thought.mp3' }
+      ];
+      var audio = new Audio();
       audio.preload = 'none';
-      audio.loop = true;
       var player = document.querySelector('.player');
       var toggle = player.querySelector('.player-toggle');
+      var playerTitle = player.querySelector('.player-title');
+      var trackButtons = document.querySelectorAll('[data-track]');
+      var trackIndex = 3;
       var wantPlaying = false;
       var fadeTimer;
 
@@ -478,7 +564,18 @@
         toggle.setAttribute('aria-label', on ? 'Pause' : 'Play');
       }
 
+      function loadTrack(i) {
+        trackIndex = i;
+        audio.src = TRACKS[i].src;
+        playerTitle.textContent = TRACKS[i].title;
+        player.style.setProperty('--progress', 0);
+        trackButtons.forEach(function (b) {
+          b.setAttribute('aria-current', String(Number(b.dataset.track) === i));
+        });
+      }
+
       function play(fadeMs) {
+        if (!audio.src) loadTrack(trackIndex);
         setPlaying(true);
         audio.volume = 0;
         // Blocked autoplay (e.g. Safari after a page change) leaves the player paused; one tap starts it.
@@ -502,16 +599,31 @@
         }
       });
 
+      trackButtons.forEach(function (b) {
+        b.addEventListener('click', function () {
+          loadTrack(Number(b.dataset.track));
+          play(300);
+          store('btd-sound', 'on');
+        });
+      });
+
+      audio.addEventListener('ended', function () {
+        loadTrack((trackIndex + 1) % TRACKS.length);
+        play(10);
+      });
+
       audio.addEventListener('timeupdate', function () {
         if (audio.duration) player.style.setProperty('--progress', audio.currentTime / audio.duration);
       });
 
       // Media keys / OS controls can pause us behind our back; keep the button honest.
       audio.addEventListener('pause', function () {
-        if (wantPlaying && audio.paused) setPlaying(false);
+        if (wantPlaying && audio.paused && !audio.ended) setPlaying(false);
       });
 
-      // Music was on over on the Wendt page: fade the song in as the light fades out.
+      loadTrack(trackIndex);
+
+      // Music was on over on the Wendt page: fade Human Adjacent in as the light fades out.
       if (recall('btd-sound') === 'on') play(3000);
 
       // ---------- Back to the new album ----------

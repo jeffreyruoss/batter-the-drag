@@ -719,7 +719,7 @@
       <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4.5h4v15H6zM14 4.5h4v15h-4z"/></svg>
     </button>
     <div class="player-meta">
-      <span class="player-title" aria-live="polite">Masmusa</span>
+      <span class="player-title" aria-live="polite">Banane</span>
       <span class="player-progress" aria-hidden="true"><span></span></span>
     </div>
     <span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
@@ -1002,7 +1002,7 @@
       // Pick up the album where it was left, if this visitor has been here this session.
       var saved = (recall('btd-wendt') || '').split(':');
       if (TRACKS[saved[0]]) loadTrack(Number(saved[0]), Number(saved[1]) || 0);
-      else loadTrack(0);
+      else loadTrack(2); // first visit starts on Banane
 
       function ready() { root.classList.add('is-ready'); }
 
