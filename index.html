@@ -116,7 +116,7 @@
       position: fixed;
       inset: 0;
       pointer-events: none;
-      background: radial-gradient(circle at var(--ox) var(--oy), #fffdf0, var(--light) 40%, #d9dcb0);
+      background: radial-gradient(circle at var(--ex, 55%) var(--ey, 55%), #fffdf0, var(--light) 40%, #d9dcb0);
       opacity: 0;
       z-index: 20;
     }
@@ -448,6 +448,7 @@
       .is-leaving .title,
       .is-leaving .info,
       .is-leaving .arrow { opacity: 0; filter: blur(8px); transition: opacity .6s, filter .6s; }
+      .is-leaving .arrow { animation: none; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -636,18 +637,29 @@
       var target = { x: 0, y: 0 };
       var current = { x: 0, y: 0 };
 
+      var parallaxRunning = false;
+
+      // Runs only while easing toward the mouse, then stops until the mouse moves again.
       function parallax() {
         current.x += (target.x - current.x) * 0.05;
         current.y += (target.y - current.y) * 0.05;
         root.style.setProperty('--px', current.x.toFixed(2) + 'px');
         root.style.setProperty('--py', current.y.toFixed(2) + 'px');
-        requestAnimationFrame(parallax);
+        if (Math.abs(target.x - current.x) > 0.01 || Math.abs(target.y - current.y) > 0.01) {
+          requestAnimationFrame(parallax);
+        } else {
+          parallaxRunning = false;
+        }
       }
 
       window.addEventListener('pointermove', function (e) {
-        if (e.pointerType !== 'mouse') return;
+        if (reduceMotion || e.pointerType !== 'mouse') return;
         target.x = (e.clientX / window.innerWidth - 0.5) * -22;
         target.y = (e.clientY / window.innerHeight - 0.5) * -14;
+        if (!parallaxRunning) {
+          parallaxRunning = true;
+          requestAnimationFrame(parallax);
+        }
       });
 
       // ---------- Next page: walk into the light ----------
@@ -659,6 +671,10 @@
         leaving = true;
         if (reduceMotion) { location.href = next.href; return; }
         try { sessionStorage.setItem('btd-arrive', 'light'); } catch (e) {}
+        // .scene bleeds past the viewport and moves with the parallax, so convert the opening to viewport coords.
+        var rect = scene.getBoundingClientRect();
+        root.style.setProperty('--ex', rect.left + opening.x + 'px');
+        root.style.setProperty('--ey', rect.top + opening.y + 'px');
         document.body.classList.add('is-leaving');
         setTimeout(function () { location.href = next.href; }, 1500);
       }
@@ -670,13 +686,17 @@
       });
 
       window.addEventListener('keydown', function (e) {
+        if (e.altKey || e.metaKey || e.ctrlKey || e.shiftKey || e.defaultPrevented) return;
         if (e.key === 'ArrowRight') goNext();
       });
 
       var touchX = null;
-      window.addEventListener('touchstart', function (e) { touchX = e.touches[0].clientX; }, { passive: true });
+      // Single-finger swipes only, so pinch-zoom never navigates.
+      window.addEventListener('touchstart', function (e) {
+        touchX = e.touches.length === 1 ? e.touches[0].clientX : null;
+      }, { passive: true });
       window.addEventListener('touchend', function (e) {
-        if (touchX === null) return;
+        if (touchX === null || e.touches.length > 0) { touchX = null; return; }
         if (touchX - e.changedTouches[0].clientX > 70) goNext();
         touchX = null;
       });
@@ -689,18 +709,23 @@
         }
       });
 
+      // Mobile browsers fire resize when the URL bar shows/hides; only respawn the dust when the width changes.
       var resizeTimer;
+      var lastWidth = window.innerWidth;
       window.addEventListener('resize', function () {
         clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(function () { layout(); initDust(); }, 120);
+        resizeTimer = setTimeout(function () {
+          layout();
+          if (window.innerWidth !== lastWidth) {
+            lastWidth = window.innerWidth;
+            initDust();
+          }
+        }, 120);
       });
 
       layout();
       initDust();
-      if (!reduceMotion) {
-        requestAnimationFrame(drawDust);
-        requestAnimationFrame(parallax);
-      }
+      if (!reduceMotion) requestAnimationFrame(drawDust);
     })();
   </script>
 </body>

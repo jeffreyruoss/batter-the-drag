@@ -23,6 +23,11 @@
       height: 100%;
     }
 
+    /* Keeps body's background on body, so the fade-to-black below fades it too */
+    html {
+      background: black;
+    }
+
     body {
       background-color: black;
       background-image: url('bg-2.webp');
@@ -277,8 +282,10 @@
       opacity: 0;
     }
 
-    .arriving .arrive-light {
-      animation: fadeOut 1.6s ease-in-out both;
+    @media (prefers-reduced-motion: no-preference) {
+      .arriving .arrive-light {
+        animation: fadeOut 1.6s ease-in-out both;
+      }
     }
 
     @keyframes fadeOut {
@@ -291,8 +298,10 @@
     }
 
     /* Leaving for the new album: fade to black */
-    body {
-      transition: opacity 0.6s ease-in;
+    @media (prefers-reduced-motion: no-preference) {
+      body {
+        transition: opacity 0.6s ease-in;
+      }
     }
 
     body.is-leaving {
@@ -346,6 +355,7 @@
       function goPrev() {
         if (leaving) return;
         leaving = true;
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { location.href = prev.href; return; }
         document.body.classList.add('is-leaving');
         setTimeout(function () { location.href = prev.href; }, 600);
       }
@@ -357,13 +367,17 @@
       });
 
       window.addEventListener('keydown', function (e) {
+        if (e.altKey || e.metaKey || e.ctrlKey || e.shiftKey || e.defaultPrevented) return;
         if (e.key === 'ArrowLeft') goPrev();
       });
 
       var touchX = null;
-      window.addEventListener('touchstart', function (e) { touchX = e.touches[0].clientX; }, { passive: true });
+      // Single-finger swipes only, so pinch-zoom never navigates.
+      window.addEventListener('touchstart', function (e) {
+        touchX = e.touches.length === 1 ? e.touches[0].clientX : null;
+      }, { passive: true });
       window.addEventListener('touchend', function (e) {
-        if (touchX === null) return;
+        if (touchX === null || e.touches.length > 0) { touchX = null; return; }
         if (e.changedTouches[0].clientX - touchX > 70) goPrev();
         touchX = null;
       });
