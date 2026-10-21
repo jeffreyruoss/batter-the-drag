@@ -520,111 +520,23 @@
       <span class="player-progress" aria-hidden="true"><span></span></span>
     </div>
   </div>
+  <script src="player.js"></script>
   <script>
     (function () {
-      function store(key, value) { try { sessionStorage.setItem(key, value); } catch (e) {} }
-      function recall(key) { try { return sessionStorage.getItem(key); } catch (e) { return null; } }
-
-      // ---------- Sound: the EP, starting on Human Adjacent ----------
-      var TRACKS = [
-        { title: 'Brutal Future', src: 'audio/brutal-future.mp3' },
-        { title: 'Ghost Parasite', src: 'audio/ghost-parasite.mp3' },
-        { title: 'Frozen Shoulder', src: 'audio/frozen-shoulder.mp3' },
-        { title: 'Human Adjacent', src: 'audio/human-adjacent.mp3' },
-        { title: 'Outsourced Thought', src: 'audio/outsourced-thought.mp3' }
-      ];
-      var audio = new Audio();
-      audio.preload = 'none';
-      var player = document.querySelector('.player');
-      var toggle = player.querySelector('.player-toggle');
-      var playerTitle = player.querySelector('.player-title');
-      var trackButtons = document.querySelectorAll('[data-track]');
-      var trackIndex = 3;
-      var wantPlaying = false;
-      var fadeTimer;
-
-      // Volume ramp. iOS ignores audio.volume, so there it simply starts and stops.
-      function fadeTo(volume, ms, done) {
-        clearInterval(fadeTimer);
-        var from = audio.volume;
-        var start = performance.now();
-        fadeTimer = setInterval(function () {
-          var k = Math.min(1, (performance.now() - start) / ms);
-          audio.volume = from + (volume - from) * k;
-          if (k === 1) {
-            clearInterval(fadeTimer);
-            if (done) done();
-          }
-        }, 30);
-      }
-
-      function setPlaying(on) {
-        wantPlaying = on;
-        player.classList.toggle('is-playing', on);
-        toggle.setAttribute('aria-label', on ? 'Pause' : 'Play');
-      }
-
-      function loadTrack(i) {
-        trackIndex = i;
-        audio.src = TRACKS[i].src;
-        playerTitle.textContent = TRACKS[i].title;
-        player.style.setProperty('--progress', 0);
-        trackButtons.forEach(function (b) {
-          b.setAttribute('aria-current', String(Number(b.dataset.track) === i));
-        });
-      }
-
-      function play(fadeMs) {
-        if (!audio.src) loadTrack(trackIndex);
-        setPlaying(true);
-        audio.volume = 0;
-        // Blocked autoplay (e.g. Safari after a page change) leaves the player paused; one tap starts it.
-        audio.play().then(function () { fadeTo(1, fadeMs); }, function (err) {
-          if (err.name === 'NotAllowedError') setPlaying(false);
-        });
-      }
-
-      function pause() {
-        setPlaying(false);
-        fadeTo(0, 400, function () { audio.pause(); });
-      }
-
-      toggle.addEventListener('click', function () {
-        if (wantPlaying) {
-          pause();
-          store('btd-sound', 'off');
-        } else {
-          play(600);
-          store('btd-sound', 'on');
-        }
+      var music = BTD.createPlayer({
+        player: document.querySelector('.player'),
+        tracks: [
+          { title: 'Brutal Future', src: 'audio/brutal-future.mp3' },
+          { title: 'Ghost Parasite', src: 'audio/ghost-parasite.mp3' },
+          { title: 'Frozen Shoulder', src: 'audio/frozen-shoulder.mp3' },
+          { title: 'Human Adjacent', src: 'audio/human-adjacent.mp3' },
+          { title: 'Outsourced Thought', src: 'audio/outsourced-thought.mp3' }
+        ],
+        start: 3 // Human Adjacent
       });
-
-      trackButtons.forEach(function (b) {
-        b.addEventListener('click', function () {
-          loadTrack(Number(b.dataset.track));
-          play(300);
-          store('btd-sound', 'on');
-        });
-      });
-
-      audio.addEventListener('ended', function () {
-        loadTrack((trackIndex + 1) % TRACKS.length);
-        play(10);
-      });
-
-      audio.addEventListener('timeupdate', function () {
-        if (audio.duration) player.style.setProperty('--progress', audio.currentTime / audio.duration);
-      });
-
-      // Media keys / OS controls can pause us behind our back; keep the button honest.
-      audio.addEventListener('pause', function () {
-        if (wantPlaying && audio.paused && !audio.ended) setPlaying(false);
-      });
-
-      loadTrack(trackIndex);
 
       // Music was on over on the Wendt page: fade Human Adjacent in as the light fades out.
-      if (recall('btd-sound') === 'on') play(3000);
+      if (BTD.recall('btd-sound') === 'on') music.play(3000);
 
       // ---------- Back to the new album ----------
       var prev = document.querySelector('[data-prev]');
@@ -633,9 +545,8 @@
       function goPrev() {
         if (leaving) return;
         leaving = true;
-        store('btd-sound', wantPlaying ? 'on' : 'off');
         if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { location.href = prev.href; return; }
-        if (wantPlaying) fadeTo(0, 550);
+        music.leave(550);
         document.body.classList.add('is-leaving');
         setTimeout(function () { location.href = prev.href; }, 600);
       }
@@ -667,8 +578,7 @@
         if (e.persisted) {
           leaving = false;
           document.body.classList.remove('is-leaving');
-          if (recall('btd-sound') === 'on') play(2000);
-          else setPlaying(false);
+          music.restore(2000);
         }
       });
     })();
