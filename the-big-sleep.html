@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Batter The Drag · The Big Sleep</title>
+  <meta name="description" content="The Big Sleep, as told by Batter The Drag. Ten songs. Listen on Bandcamp.">
+  <meta property="og:title" content="Batter The Drag · The Big Sleep">
+  <meta property="og:description" content="The Big Sleep, as told by Batter The Drag. Listen on Bandcamp.">
+  <meta property="og:image" content="https://batterthedrag.com/the-big-sleep/cover.jpg">
+  <meta property="og:url" content="https://batterthedrag.com/the-big-sleep.html">
+  <meta property="og:type" content="music.album">
+  <meta name="theme-color" content="#e6e5de">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="preload" href="the-big-sleep/art.webp" as="image" media="(min-width: 700px)">
+  <link rel="preload" href="the-big-sleep/art-sm.webp" as="image" media="(max-width: 699px)">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <script>document.documentElement.classList.replace('no-js', 'js');</script>
+  <script>try { var a = sessionStorage.getItem('btd-arrive'); if (a) { sessionStorage.removeItem('btd-arrive'); document.documentElement.dataset.arrive = a; } } catch (e) {}</script>
+  <style>
+    :root {
+      --paper: #e6e5de;        /* the painting's paper, sampled */
+      --paper-edge: #cdd0cc;   /* its cooler, greyer edges */
+      --red: #860e1a;          /* album-cover title red */
+      --ink: #19140a;          /* "as told by" near-black */
+      --ink-soft: #4b4334;
+      --ink-faint: #8a8070;
+      --ease-out: cubic-bezier(.16, 1, .3, 1);
+      --gutter: clamp(20px, 5vw, 72px);
+      /* Arrow columns, so the songs and the painting never sit under an arrow */
+      --arrow-x: clamp(8px, 3vw, 56px);
+      --arrow-w: clamp(38px, 5vw, 70px);
+    }
+
+    /* Eyelids: animated as one custom property so they can open and close */
+    @property --eh {
+      syntax: '<percentage>';
+      inherits: false;
+      initial-value: 0%;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html {
+      height: 100%;
+      background: var(--paper);
+    }
+
+    body {
+      height: 100%;
+      overflow: hidden;
+      color: var(--ink);
+      font-family: 'EB Garamond', 'Iowan Old Style', Georgia, serif;
+      -webkit-font-smoothing: antialiased;
+      background:
+        radial-gradient(ellipse 70% 60% at 62% 42%, #efeee8, transparent 70%),
+        radial-gradient(ellipse 120% 100% at 50% 50%, var(--paper) 40%, var(--paper-edge) 100%);
+    }
+
+    a { color: inherit; }
+
+    /* ---------- Paper: slow watercolor blooms and grain ---------- */
+
+    .blooms {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .blooms i {
+      position: absolute;
+      width: 70vmax;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      mix-blend-mode: multiply;
+      filter: blur(40px);
+    }
+
+    .blooms i:nth-child(1) {
+      left: -25vmax;
+      bottom: -30vmax;
+      background: radial-gradient(closest-side, rgba(167, 127, 42, .16), transparent);
+    }
+
+    .blooms i:nth-child(2) {
+      right: -28vmax;
+      top: -32vmax;
+      background: radial-gradient(closest-side, rgba(126, 140, 176, .2), transparent);
+    }
+
+    .blooms i:nth-child(3) {
+      right: -20vmax;
+      bottom: -40vmax;
+      width: 55vmax;
+      background: radial-gradient(closest-side, rgba(134, 14, 26, .06), transparent);
+    }
+
+    .grain {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: .35;
+      mix-blend-mode: multiply;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.7' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .42 0 0 0 0 .36 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      z-index: 4;
+    }
+
+    /* ---------- The painting ---------- */
+
+    /* Phones and tall screens: painting up top, songs over a paper wash below */
+    .stage {
+      --size: min(112vw, 64vh);
+      position: fixed;
+      top: calc(env(safe-area-inset-top) + 74px);
+      right: max(0px, (100vw - var(--size)) / 2);
+      width: var(--size);
+      height: var(--size);
+    }
+
+    /* Feather the square into the page's paper */
+    .art {
+      position: absolute;
+      inset: 0;
+      -webkit-mask-image:
+        linear-gradient(to right, transparent, #000 9%, #000 93%, transparent),
+        linear-gradient(to bottom, transparent, #000 7%, #000 88%, transparent);
+      -webkit-mask-composite: source-in;
+      mask-image:
+        linear-gradient(to right, transparent, #000 9%, #000 93%, transparent),
+        linear-gradient(to bottom, transparent, #000 7%, #000 88%, transparent);
+      mask-composite: intersect;
+    }
+
+    /* The paint soaks in from a ragged watercolor blot */
+    .bleed {
+      position: absolute;
+      inset: 0;
+      -webkit-mask: url('the-big-sleep/bleed.png') no-repeat 40% 60% / 600% 600%;
+      mask: url('the-big-sleep/bleed.png') no-repeat 40% 60% / 600% 600%;
+    }
+
+    .paint {
+      position: absolute;
+      inset: 0;
+      background: url('the-big-sleep/art.webp') center / cover no-repeat;
+    }
+
+    @media (max-width: 699px) {
+      .paint { background-image: url('the-big-sleep/art-sm.webp'); }
+    }
+
+    /* Just the sleeper, masked off from the needle, so only it breathes */
+    .paint.breath {
+      -webkit-mask: url('the-big-sleep/breath-mask.png') center / 100% 100% no-repeat;
+      mask: url('the-big-sleep/breath-mask.png') center / 100% 100% no-repeat;
+      transform-origin: 40% 100%;
+    }
+
+    /* ---------- Title, set where the cover sets it ---------- */
+
+    .title {
+      position: absolute;
+      top: 3.4%;
+      right: 4.5%;
+      z-index: 2;
+      text-align: right;
+      font-weight: 400;
+      line-height: 1;
+      font-kerning: none;       /* split letters can't kern */
+    }
+
+    .title > span { display: block; }
+
+    .t-album {
+      position: relative;
+      font-size: calc(var(--size) * .074);
+      color: var(--red);
+      letter-spacing: -.005em;
+      white-space: nowrap;
+    }
+
+    .t-by {
+      margin: .1em 23% 0 0;
+      font-size: calc(var(--size) * .033);
+      font-style: italic;
+      color: var(--ink);
+    }
+
+    .t-band {
+      margin-top: .04em;
+      font-size: calc(var(--size) * .046);
+      color: var(--ink);
+      white-space: nowrap;
+    }
+
+    /* A running stitch sewn in from the needle's side */
+    .stitch {
+      position: absolute;
+      left: 2%;
+      right: 0;
+      bottom: -.22em;
+      width: 98%;
+      height: .22em;
+      overflow: visible;
+      fill: none;
+      stroke: var(--red);
+      stroke-width: 1.4;
+      stroke-dasharray: 7 5;
+      stroke-linecap: round;
+      vector-effect: non-scaling-stroke;
+      opacity: .8;
+    }
+
+    /* ---------- Songs, Bandcamp, socials ---------- */
+
+    .info {
+      position: fixed;
+      left: var(--gutter);
+      bottom: calc(var(--gutter) + env(safe-area-inset-bottom));
+      z-index: 5;
+      display: grid;
+      gap: 18px;
+      max-width: min(440px, calc(100vw - var(--gutter) * 2));
+    }
+
+    .eyebrow {
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: .34em;
+      text-transform: uppercase;
+      color: var(--red);
+    }
+
+    .tracks {
+      list-style: none;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 3px 16px;
+      font-size: 18px;
+      color: var(--ink-soft);
+    }
+
+    .tracks button {
+      all: unset;
+      cursor: pointer;
+      transition: color .3s;
+    }
+
+    .tracks button:hover,
+    .tracks button[aria-current="true"] { color: var(--red); }
+    .tracks button[aria-current="true"] { text-decoration: underline dashed rgba(134, 14, 26, .55) 1px; text-underline-offset: 4px; }
+    .tracks button:focus-visible { outline: 1px solid var(--red); outline-offset: 3px; }
+
+    .tracks li span {
+      margin-right: 5px;
+      font-size: 12px;
+      font-style: italic;
+      color: var(--ink-faint);
+    }
+
+    .listen {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      justify-self: start;
+      padding: 14px 24px;
+      border: 1px solid rgba(25, 20, 10, .55);
+      color: var(--ink);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: .3em;
+      text-transform: uppercase;
+      overflow: hidden;
+      isolation: isolate;
+      transition: color .5s var(--ease-out), border-color .5s var(--ease-out);
+    }
+
+    .listen::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      background: var(--red);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform .6s var(--ease-out);
+    }
+
+    .listen svg {
+      width: 22px;
+      height: 10px;
+      stroke: currentColor;
+      fill: none;
+      transition: transform .5s var(--ease-out);
+    }
+
+    .listen:hover,
+    .listen:focus-visible {
+      color: var(--paper);
+      border-color: var(--red);
+    }
+
+    .listen:hover::before,
+    .listen:focus-visible::before { transform: scaleX(1); }
+    .listen:hover svg,
+    .listen:focus-visible svg { transform: translateX(6px); }
+
+    .social {
+      display: flex;
+      gap: 18px;
+    }
+
+    .social a {
+      display: block;
+      transition: transform .3s var(--ease-out);
+    }
+
+    .social svg {
+      width: 28px;
+      height: 28px;
+      fill: var(--ink-soft);
+      transition: fill .3s;
+    }
+
+    .social a:hover { transform: translateY(-3px); }
+    .social a:hover svg,
+    .social a:focus-visible svg { fill: var(--red); }
+
+    /* ---------- Big prev/next arrows ---------- */
+
+    .arrow {
+      position: fixed;
+      top: 50%;
+      left: var(--arrow-x);
+      z-index: 6;
+      display: grid;
+      justify-items: center;
+      gap: 14px;
+      padding: 16px;
+      transform: translateY(-50%);
+      color: var(--red);
+      text-decoration: none;
+      transition: color .4s;
+    }
+
+    .arrow[data-next] {
+      left: auto;
+      right: var(--arrow-x);
+    }
+
+    .arrow svg {
+      width: var(--arrow-w);
+      height: calc(var(--arrow-w) * 2);
+      stroke: currentColor;
+      stroke-width: 1;
+      fill: none;
+      overflow: visible;
+      transition: transform .4s var(--ease-out);
+    }
+
+    .arrow .label {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: .3em;
+      text-transform: uppercase;
+      writing-mode: vertical-rl;
+      color: var(--ink-soft);
+      transition: color .4s;
+    }
+
+    .arrow[data-prev] .label { transform: rotate(180deg); }
+
+    .arrow:hover,
+    .arrow:focus-visible { color: var(--ink); }
+    .arrow:hover .label,
+    .arrow:focus-visible .label { color: var(--red); }
+    .arrow[data-prev]:hover svg,
+    .arrow[data-prev]:focus-visible svg { transform: translateX(-8px); }
+    .arrow[data-next]:hover svg,
+    .arrow[data-next]:focus-visible svg { transform: translateX(8px); }
+
+    /* ---------- Player: the progress bar is a thread being sewn ---------- */
+
+    .player {
+      position: fixed;
+      right: var(--gutter);
+      bottom: calc(var(--gutter) + env(safe-area-inset-bottom));
+      z-index: 6;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      width: 270px;
+      padding: 9px 18px 9px 9px;
+      border: 1px solid rgba(25, 20, 10, .22);
+      background: rgba(240, 239, 233, .72);
+      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 10px 30px -18px rgba(25, 20, 10, .5);
+    }
+
+    .player-toggle {
+      flex: none;
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      border: 1px solid var(--red);
+      border-radius: 50%;
+      background: none;
+      color: var(--red);
+      cursor: pointer;
+      transition: background .4s, color .4s;
+    }
+
+    .player-toggle svg { width: 15px; height: 15px; fill: currentColor; }
+    .player-toggle .i-pause,
+    .player.is-playing .player-toggle .i-play { display: none; }
+    .player.is-playing .player-toggle .i-pause { display: block; }
+
+    .player-toggle:hover,
+    .player-toggle:focus-visible {
+      background: var(--red);
+      color: var(--paper);
+    }
+
+    .player-meta {
+      flex: 1;
+      display: grid;
+      gap: 9px;
+      min-width: 0;
+    }
+
+    .player-title {
+      font-size: 16px;
+      color: var(--ink);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Unsewn: stitch holes. Sewn: solid red thread. */
+    .player-progress {
+      height: 2px;
+      background: repeating-linear-gradient(90deg, rgba(134, 14, 26, .3) 0 5px, transparent 5px 9px);
+      overflow: hidden;
+    }
+
+    .player-progress span {
+      display: block;
+      height: 100%;
+      background: var(--red);
+      transform-origin: left;
+      transform: scaleX(var(--progress, 0));
+    }
+
+    .eq {
+      flex: none;
+      display: flex;
+      align-items: flex-end;
+      gap: 3px;
+      height: 16px;
+    }
+
+    .eq i {
+      width: 2px;
+      height: 20%;
+      background: var(--ink-faint);
+      transition: background .4s;
+    }
+
+    .player.is-playing .eq i {
+      background: var(--red);
+      animation: eq .8s ease-in-out infinite alternate;
+    }
+
+    .player.is-playing .eq i:nth-child(2) { animation-duration: .55s; animation-delay: -.2s; }
+    .player.is-playing .eq i:nth-child(3) { animation-duration: .7s; animation-delay: -.5s; }
+    .player.is-playing .eq i:nth-child(4) { animation-duration: .9s; animation-delay: -.1s; }
+
+    /* ---------- Eyelids: waking up on arrival, dozing off on the way out ---------- */
+
+    .lids {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      pointer-events: none;
+      background: #0f0c08;
+      -webkit-mask-image: radial-gradient(76% var(--eh) at 50% 50%, transparent 80%, #000 100%);
+      mask-image: radial-gradient(76% var(--eh) at 50% 50%, transparent 80%, #000 100%);
+    }
+
+    .no-js .lids { display: none; }
+
+    :focus-visible { outline: 1px solid var(--red); outline-offset: 4px; }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap;
+    }
+
+    /* Under the songs on phones and tall screens, the painting washes out into paper */
+    .info::before {
+      content: '';
+      position: absolute;
+      z-index: -1;
+      inset: -90px auto -200px calc(var(--gutter) * -1);
+      width: 100vw;
+      pointer-events: none;
+      background: linear-gradient(to bottom, rgba(230, 229, 222, 0), rgba(230, 229, 222, .9) 80px, var(--paper) 120px);
+    }
+
+    @media (max-width: 699px) {
+      .stage { top: calc(env(safe-area-inset-top) + 66px); }
+      .info { bottom: calc(env(safe-area-inset-bottom) + 86px); gap: 14px; }
+      .eyebrow { font-size: 12px; letter-spacing: .28em; }
+      .tracks { font-size: 15px; gap: 2px 12px; }
+      .listen { padding: 12px 18px; font-size: 12px; letter-spacing: .24em; }
+      .social svg { width: 24px; height: 24px; }
+      .player { left: var(--gutter); right: var(--gutter); bottom: calc(14px + env(safe-area-inset-bottom)); width: auto; }
+      /* Arrows up in the top corners, above the painting */
+      .arrow { top: calc(env(safe-area-inset-top) + 4px); transform: none; padding: 10px; }
+      .arrow[data-prev] { left: 4px; }
+      .arrow[data-next] { right: 4px; }
+      .arrow svg { width: 24px; height: 48px; }
+      .arrow .label { display: none; }
+    }
+
+    @media (min-width: 700px) and (max-width: 999px), (min-width: 700px) and (max-aspect-ratio: 1499/1000) {
+      .arrow { top: calc(env(safe-area-inset-top) + 8px); transform: none; }
+      .arrow svg { width: 30px; height: 60px; }
+      .arrow .label { display: none; }
+      .stage { top: calc(env(safe-area-inset-top) + 92px); }
+    }
+
+    /* Wide screens: songs in their own column, the painting standing on the bottom edge.
+       Squarer screens use the stacked layout above, where the painting can be bigger. */
+    @media (min-width: 1000px) and (min-aspect-ratio: 3/2) {
+      :root {
+        --col-l: calc(var(--arrow-x) + var(--arrow-w) + 40px);
+        --col-r: calc(var(--arrow-x) + var(--arrow-w) + 32px);
+        --info-w: 320px;
+        --region: calc(100vw - var(--col-l) - var(--info-w) - 24px - var(--col-r));
+      }
+
+      .stage {
+        --size: min(100vh, var(--region));
+        top: auto;
+        bottom: 0;
+        right: auto;
+        left: calc(var(--col-l) + var(--info-w) + 24px + (var(--region) - var(--size)) / 2);
+      }
+
+      /* It stands on the bottom edge, so only feather the sides and top */
+      .art {
+        -webkit-mask-image:
+          linear-gradient(to right, transparent, #000 9%, #000 93%, transparent),
+          linear-gradient(to bottom, transparent, #000 7%);
+        mask-image:
+          linear-gradient(to right, transparent, #000 9%, #000 93%, transparent),
+          linear-gradient(to bottom, transparent, #000 7%);
+      }
+
+      .info {
+        left: var(--col-l);
+        max-width: var(--info-w);
+      }
+
+      .info::before { display: none; }
+    }
+
+    @media (max-height: 560px) {
+      .tracks { display: none; }
+    }
+
+    /* ---------- Motion ---------- */
+
+    @keyframes wake {
+      0%   { --eh: 0%; opacity: 1; }
+      28%  { --eh: 24%; }
+      40%  { --eh: 3%; }
+      52%  { --eh: 6%; }
+      80%  { --eh: 90%; opacity: 1; }
+      100% { --eh: 190%; opacity: 0; }
+    }
+
+    @keyframes doze {
+      0%   { --eh: 190%; opacity: 1; }
+      45%  { --eh: 26%; }
+      62%  { --eh: 34%; }
+      100% { --eh: 0%; opacity: 1; }
+    }
+
+    @keyframes soak {
+      from { -webkit-mask-size: 0% 0%; mask-size: 0% 0%; }
+      to   { -webkit-mask-size: 600% 600%; mask-size: 600% 600%; }
+    }
+
+    @keyframes dry {
+      from { filter: saturate(.25) brightness(1.18) blur(3px); }
+      to   { filter: none; }
+    }
+
+    @keyframes breathe {
+      0%, 100% { transform: scale(1, 1); }
+      45%      { transform: scale(1.007, 1.016); }
+      55%      { transform: scale(1.007, 1.016); }
+    }
+
+    @keyframes ink {
+      from { opacity: 0; color: #c48a8f; filter: blur(9px); transform: translateY(.06em); }
+      60%  { opacity: 1; }
+      to   { opacity: 1; filter: blur(0); transform: none; }
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(18px); filter: blur(5px); }
+      to   { opacity: 1; transform: none; filter: blur(0); }
+    }
+
+    @keyframes fade-in {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    @keyframes sew {
+      from { clip-path: inset(0 0 0 100%); }
+      to   { clip-path: inset(0 0 0 0); }
+    }
+
+    @keyframes wander-a {
+      from { transform: translate(0, 0) scale(1); }
+      to   { transform: translate(8vmax, -6vmax) scale(1.15); }
+    }
+
+    @keyframes wander-b {
+      from { transform: translate(0, 0) scale(1.1); }
+      to   { transform: translate(-7vmax, 5vmax) scale(.95); }
+    }
+
+    @keyframes eq {
+      from { height: 15%; }
+      to   { height: 100%; }
+    }
+
+    /* Hold the page closed until the painting has loaded */
+    .js:not(.is-ready) :is(.art, .title, .info, .arrow, .player) { visibility: hidden; }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .is-ready .lids { animation: wake 2.6s .2s ease-in-out both; }
+      .is-ready .bleed { animation: soak 4.2s .9s cubic-bezier(.3, .1, .3, 1) both; }
+      .is-ready .paint.base { animation: dry 5s .9s ease-out both; }
+      .is-ready .paint.breath { animation: dry 5s .9s ease-out both, breathe 7s 5s ease-in-out infinite; }
+      .is-ready .title .split > span { display: inline-block; white-space: pre; animation: ink 1.6s calc(2.3s + var(--i) * 75ms) var(--ease-out) both; }
+      .is-ready .t-by { animation: fade-in 1.6s 3.4s ease both; }
+      .is-ready .t-band.split > span { animation-delay: calc(3.7s + var(--i) * 45ms); }
+      .is-ready .stitch { animation: sew 1.8s 3.2s cubic-bezier(.6, 0, .3, 1) both; }
+      .is-ready .info > * { animation: rise 1.4s var(--ease-out) both; }
+      .is-ready .info > :nth-child(1) { animation-delay: 3.2s; }
+      .is-ready .info > :nth-child(2) { animation-delay: 3.4s; }
+      .is-ready .info > :nth-child(3) { animation-delay: 3.6s; }
+      .is-ready .info > :nth-child(4) { animation-delay: 3.8s; }
+      .is-ready .arrow { animation: fade-in 1.6s 4s ease both; }
+      .is-ready .player { animation: rise 1.4s 4.2s var(--ease-out) both; }
+      .blooms i:nth-child(1) { animation: wander-a 38s ease-in-out infinite alternate; }
+      .blooms i:nth-child(2) { animation: wander-b 46s ease-in-out infinite alternate; }
+      .blooms i:nth-child(3) { animation: wander-a 52s -20s ease-in-out infinite alternate-reverse; }
+
+      /* Dozing off */
+      .is-leaving .lids { animation: doze 1.2s cubic-bezier(.5, 0, .5, 1) both; }
+      .is-leaving .stage { filter: blur(4px); transition: filter 1.2s ease-in; }
+      .is-leaving .info,
+      .is-leaving .arrow,
+      .is-leaving .player { opacity: 0; transition: opacity .6s; animation: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .lids { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="blooms" aria-hidden="true"><i></i><i></i><i></i></div>
+
+  <div class="stage">
+    <div class="art" aria-hidden="true">
+      <div class="bleed">
+        <div class="paint base"></div>
+        <div class="paint breath"></div>
+      </div>
+    </div>
+    <h1 class="title" aria-label="The Big Sleep, as told by Batter The Drag">
+      <span class="t-album split" aria-hidden="true">The Big Sleep<svg class="stitch" viewBox="0 0 300 10" preserveAspectRatio="none" aria-hidden="true"><path d="M2 6C50 2 90 9 150 5S250 2 298 6"/></svg></span>
+      <span class="t-by" aria-hidden="true">as told by</span>
+      <span class="t-band split" aria-hidden="true">Batter The Drag</span>
+    </h1>
+  </div>
+
+  <div class="grain" aria-hidden="true"></div>
+
+  <div class="info">
+    <p class="eyebrow">The Big Sleep LP</p>
+    <ol class="tracks">
+      <li><button type="button" data-track="0"><span>1</span>Cartel Etiquette</button></li>
+      <li><button type="button" data-track="1"><span>2</span>End Is The Answer</button></li>
+      <li><button type="button" data-track="2"><span>3</span>Dead On The Vine</button></li>
+      <li><button type="button" data-track="3"><span>4</span>Striptease Necktie</button></li>
+      <li><button type="button" data-track="4"><span>5</span>Ridin' The Fishtail</button></li>
+      <li><button type="button" data-track="5"><span>6</span>Toby's Last Ride</button></li>
+      <li><button type="button" data-track="6"><span>7</span>Figures In The Eights</button></li>
+      <li><button type="button" data-track="7"><span>8</span>Backmask Facelift</button></li>
+      <li><button type="button" data-track="8"><span>9</span>Hey, Mudraker</button></li>
+      <li><button type="button" data-track="9"><span>10</span>Itinerary</button></li>
+    </ol>
+    <a class="listen" href="https://batterthedrag.bandcamp.com/album/the-big-sleep" target="_blank" rel="noopener">
+      Listen on Bandcamp
+      <svg viewBox="0 0 22 10" aria-hidden="true"><path d="M0 5h21M16 .5 21 5l-5 4.5"/></svg>
+    </a>
+    <nav class="social" aria-label="Batter The Drag elsewhere">
+      <a href="https://batterthedrag.bandcamp.com/album/the-big-sleep" target="_blank" rel="noopener" aria-label="Bandcamp">
+        <svg viewBox="0 0 682.7 682.7" aria-hidden="true"><path d="M682.6 341.3C682.6 152.8 529.8 0 341.3 0S0 152.8 0 341.3s152.8 341.3 341.3 341.3 341.3-152.7 341.3-341.3zm-240.8 96.6c-17.8 0-37-4.5-45.6-22.4h-.5v18.7h-27.5v-188L266.5 433.8h-218l101.8-187.9h246.9v69.6h.5c7.9-13.2 24.5-21.4 39.3-21.4 41.5 0 61.7 32.7 61.7 72.5 0 36.7-17.9 71.3-56.9 71.3zm68.7-70.4c0-41.1 21.7-73.3 65-73.3 30.6 0 56.6 15.8 59.4 49.3h-29c-2.3-16.6-14-25.6-30.1-25.6-15 0-36.2 8.2-36.2 49.6 0 22.7 9.7 46.7 34.9 46.7 16.8 0 28.5-11.6 31.4-31.1H635c-5.4 35.3-26.5 54.9-60.4 54.9-41.4-.1-64.1-30.4-64.1-70.5z"/><path d="M433.1 414.2c-23.4 0-37-20.6-37-48 0-29 12.5-48.3 37-48.3 24 0 36.4 23.5 36.5 48.3 0 23.7-10 48-36.5 48z"/></svg>
+      </a>
+      <a href="https://open.spotify.com/artist/7n0isdj3K0MwurrqOzG4f8" target="_blank" rel="noopener" aria-label="Spotify">
+        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M15.9 8.9C12.7 7 7.4 6.8 4.3 7.8c-.5.1-1-.1-1.2-.6-.1-.6.2-1.1.7-1.2 3.6-1.1 9.4-.8 13.1 1.4.4.2.6.8.4 1.3-.3.3-.9.4-1.4.2m-.1 2.8c-.2.4-.7.5-1 .2-2.7-1.6-6.8-2.1-9.9-1.1-.4.1-.9-.1-1-.5-.1-.4 0-.9.4-.9 3.7-1.1 8.1-.6 11.2 1.3.4.2.5.7.3 1m-1.2 2.8c-.2.3-.6.4-.9.2-2.4-1.4-5.3-1.8-8.8-.9-.3.1-.6-.1-.8-.4-.1-.4.2-.6.5-.8 3.8-.9 7.1-.5 9.7 1.1.4.1.5.4.3.8M10 0C4.5 0 0 4.5 0 10s4.5 10 10 10 10-4.5 10-10S15.5 0 10 0z"/></svg>
+      </a>
+      <a href="https://www.instagram.com/batterthedrag/" target="_blank" rel="noopener" aria-label="Instagram">
+        <svg viewBox="0 0 1146.6 1146.6" aria-hidden="true"><path d="M788.3 358.3h-95.5v95.6h95.5zM573.3 671.3c52.6 0 97.9-43 97.9-97.9 0-21.5-7.2-40.6-19.1-57.3-16.7-23.9-47.8-40.6-78.8-40.6-31.1 0-62.1 16.7-78.8 40.6-11.9 16.7-19.1 35.8-19.1 57.3 0 54.9 45.4 97.9 97.9 97.9z"/><path d="M573.3 0C256.7 0 0 256.7 0 573.3s256.7 573.3 573.3 573.3 573.3-256.7 573.3-573.3S890 0 573.3 0zm279.5 745.3c0 59.7-47.8 107.5-107.5 107.5h-344c-59.7 0-107.5-47.8-107.5-107.5v-344c0-59.7 47.8-107.5 107.5-107.5h344c59.7 0 107.5 47.8 107.5 107.5v344z"/><path d="M714.3 516c7.2 16.7 11.9 38.2 11.9 57.3 0 83.6-69.3 152.9-152.9 152.9-83.6 0-152.9-69.3-152.9-152.9 0-19.1 4.8-40.6 11.9-57.3h-83.6v229.3c0 28.7 23.9 52.6 52.6 52.6h344c28.7 0 52.6-23.9 52.6-52.6V516h-83.6z"/></svg>
+      </a>
+      <a href="https://www.facebook.com/batterthedrag" target="_blank" rel="noopener" aria-label="Facebook">
+        <svg viewBox="0 0 20 19.9" aria-hidden="true"><path d="M10 0C4.5 0 0 4.5 0 10c0 5 3.7 9.1 8.4 9.9v-7H5.9V10h2.5V7.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V10h2.8l-.4 2.9h-2.3v7c4.9-.8 8.5-5 8.4-9.9 0-5.5-4.5-10-10-10z"/></svg>
+      </a>
+    </nav>
+  </div>
+
+  <a class="arrow" href="the-universe-is-ours.html" data-prev>
+    <span class="sr-only">Previous: The Universe Is Ours</span>
+    <svg viewBox="0 0 50 100" aria-hidden="true"><path d="M48 2 2 50 48 98"/></svg>
+    <span class="label" aria-hidden="true">The Universe Is Ours</span>
+  </a>
+  <a class="arrow" href="unfathomable-depths.html" data-next>
+    <span class="sr-only">Next: Unfathomable Depths</span>
+    <svg viewBox="0 0 50 100" aria-hidden="true"><path d="M2 2 48 50 2 98"/></svg>
+    <span class="label" aria-hidden="true">Unfathomable Depths</span>
+  </a>
+
+  <div class="player" role="group" aria-label="Music player">
+    <button class="player-toggle" type="button" aria-label="Play">
+      <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12.5-7.5z"/></svg>
+      <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4.5h4v15H6zM14 4.5h4v15h-4z"/></svg>
+    </button>
+    <div class="player-meta">
+      <span class="player-title" aria-live="polite">End Is The Answer</span>
+      <span class="player-progress" aria-hidden="true"><span></span></span>
+    </div>
+    <span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+  </div>
+
+  <div class="lids" aria-hidden="true"></div>
+
+  <script src="player.js"></script>
+  <script src="nav.js"></script>
+  <script>
+    (function () {
+      var root = document.documentElement;
+
+      // Split the title into letters so the ink can soak in one at a time.
+      document.querySelectorAll('.split').forEach(function (el) {
+        var stitch = el.querySelector('.stitch');
+        var text = el.firstChild.textContent;
+        el.textContent = '';
+        Array.from(text).forEach(function (ch, i) {
+          var span = document.createElement('span');
+          span.textContent = ch;
+          span.style.setProperty('--i', i);
+          el.appendChild(span);
+        });
+        if (stitch) el.appendChild(stitch);
+      });
+
+      // Open the eyes once the painting is ready to soak in (or after a moment regardless).
+      function ready() { root.classList.add('is-ready'); }
+      var img = new Image();
+      img.src = window.matchMedia('(max-width: 699px)').matches ? 'the-big-sleep/art-sm.webp' : 'the-big-sleep/art.webp';
+      (img.decode ? img.decode() : Promise.reject()).then(ready, ready);
+      setTimeout(ready, 2500);
+
+      var music = BTD.createPlayer({
+        player: document.querySelector('.player'),
+        tracks: [
+          { title: 'Cartel Etiquette', src: 'audio/cartel-etiquette.mp3' },
+          { title: 'End Is The Answer', src: 'audio/end-is-the-answer.mp3' },
+          { title: 'Dead On The Vine', src: 'audio/dead-on-the-vine.mp3' },
+          { title: 'Striptease Necktie', src: 'audio/striptease-necktie.mp3' },
+          { title: "Ridin' The Fishtail", src: 'audio/ridin-the-fishtail.mp3' },
+          { title: "Toby's Last Ride", src: 'audio/tobys-last-ride.mp3' },
+          { title: 'Figures In The Eights', src: 'audio/figures-in-the-eights.mp3' },
+          { title: 'Backmask Facelift', src: 'audio/backmask-facelift.mp3' },
+          { title: 'Hey, Mudraker', src: 'audio/hey-mudraker.mp3' },
+          { title: 'Itinerary', src: 'audio/itinerary.mp3' }
+        ],
+        start: 1, // End Is The Answer
+        resumeKey: 'btd-big-sleep'
+      });
+
+      // Music was on on the page before: fade it in as the eyes open.
+      if (BTD.recall('btd-sound') === 'on') music.play(3000);
+
+      // ---------- Prev / next: doze off ----------
+      BTD.nav({
+        prev: document.querySelector('[data-prev]'),
+        next: document.querySelector('[data-next]'),
+        leave: function () {
+          music.leave(1200);
+          document.body.classList.add('is-leaving');
+          return 1250;
+        },
+        // Back button restores this page with its eyes shut; wake it up again.
+        restore: function () {
+          document.body.classList.remove('is-leaving');
+          music.restore(2000);
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

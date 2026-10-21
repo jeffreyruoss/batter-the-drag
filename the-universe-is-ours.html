@@ -6,6 +6,7 @@
   <title>Batter The Drag</title>
   <link rel="preload" href="batter-the-drag.svg" as="image">
   <link rel="icon" type="image/png" href="favicon.png">
+  <script>try { var a = sessionStorage.getItem('btd-arrive'); if (a) { sessionStorage.removeItem('btd-arrive'); document.documentElement.dataset.arrive = a; } } catch (e) {}</script>
   <style>
     * {
       margin: 0;
@@ -233,7 +234,7 @@
       /* max-width: 85vw; */
       /* max-height: 85vw; */
     }
-    /* Big arrow back to the new album (home page) */
+    /* Big prev/next arrows */
     .arrow {
       position: fixed;
       top: 50%;
@@ -275,6 +276,19 @@
 
     .arrow:hover svg {
       transform: translateX(-8px);
+    }
+
+    .arrow[data-next] {
+      left: auto;
+      right: clamp(8px, 3vw, 56px);
+    }
+
+    .arrow[data-next] .label {
+      transform: none;
+    }
+
+    .arrow[data-next]:hover svg {
+      transform: translateX(8px);
     }
 
     /* Player: Human Adjacent */
@@ -406,6 +420,11 @@
         transform: none;
       }
 
+      .arrow[data-next] {
+        left: auto;
+        right: 4px;
+      }
+
       .arrow svg {
         width: 34px;
         height: 68px;
@@ -425,32 +444,7 @@
       white-space: nowrap;
     }
 
-    /* Arriving from the new album: fade out of its tunnel light */
-    .arrive-light {
-      position: fixed;
-      inset: 0;
-      z-index: 10;
-      pointer-events: none;
-      background: #efebcb;
-      opacity: 0;
-    }
-
-    @media (prefers-reduced-motion: no-preference) {
-      .arriving .arrive-light {
-        animation: fadeOut 1.6s ease-in-out both;
-      }
-    }
-
-    @keyframes fadeOut {
-      0% {
-        opacity: 1;
-      }
-      100% {
-        opacity: 0;
-      }
-    }
-
-    /* Leaving for the new album: fade to black */
+    /* Leaving: fade to black */
     @media (prefers-reduced-motion: no-preference) {
       body {
         transition: opacity 0.6s ease-in;
@@ -463,15 +457,6 @@
   </style>
 </head>
 <body>
-  <script>
-    try {
-      if (sessionStorage.getItem('btd-arrive') === 'light') {
-        sessionStorage.removeItem('btd-arrive');
-        document.body.classList.add('arriving');
-      }
-    } catch (e) {}
-  </script>
-  <div class="arrive-light" aria-hidden="true"></div>
   <canvas id="particlesCanvas"></canvas>
   <div class="logo">
     <div class="mask-container">
@@ -505,10 +490,15 @@
       </div>
     </div>
   </div>
-  <a class="arrow" href="./" data-prev>
-    <span class="sr-only">Previous: The Wendt LP</span>
+  <a class="arrow" href="ensete.html" data-prev>
+    <span class="sr-only">Previous: Ensete</span>
     <svg viewBox="0 0 50 100" aria-hidden="true"><path d="M48 2 2 50 48 98"/></svg>
-    <span class="label" aria-hidden="true">The Wendt LP</span>
+    <span class="label" aria-hidden="true">Ensete</span>
+  </a>
+  <a class="arrow" href="the-big-sleep.html" data-next>
+    <span class="sr-only">Next: The Big Sleep</span>
+    <svg viewBox="0 0 50 100" aria-hidden="true"><path d="M2 2 48 50 2 98"/></svg>
+    <span class="label" aria-hidden="true">The Big Sleep</span>
   </a>
   <div class="player" role="group" aria-label="Music player">
     <button class="player-toggle" type="button" aria-label="Play">
@@ -521,6 +511,7 @@
     </div>
   </div>
   <script src="player.js"></script>
+  <script src="nav.js"></script>
   <script>
     (function () {
       var music = BTD.createPlayer({
@@ -532,51 +523,23 @@
           { title: 'Human Adjacent', src: 'audio/human-adjacent.mp3' },
           { title: 'Outsourced Thought', src: 'audio/outsourced-thought.mp3' }
         ],
-        start: 3 // Human Adjacent
+        start: 3, // Human Adjacent
+        resumeKey: 'btd-universe'
       });
 
-      // Music was on over on the Wendt page: fade Human Adjacent in as the light fades out.
+      // Music was on on the page before: fade Human Adjacent in with the page.
       if (BTD.recall('btd-sound') === 'on') music.play(3000);
 
-      // ---------- Back to the new album ----------
-      var prev = document.querySelector('[data-prev]');
-      var leaving = false;
-
-      function goPrev() {
-        if (leaving) return;
-        leaving = true;
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { location.href = prev.href; return; }
-        music.leave(550);
-        document.body.classList.add('is-leaving');
-        setTimeout(function () { location.href = prev.href; }, 600);
-      }
-
-      prev.addEventListener('click', function (e) {
-        if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
-        e.preventDefault();
-        goPrev();
-      });
-
-      window.addEventListener('keydown', function (e) {
-        if (e.altKey || e.metaKey || e.ctrlKey || e.shiftKey || e.defaultPrevented) return;
-        if (e.key === 'ArrowLeft') goPrev();
-      });
-
-      var touchX = null;
-      // Single-finger swipes only, so pinch-zoom never navigates.
-      window.addEventListener('touchstart', function (e) {
-        touchX = e.touches.length === 1 ? e.touches[0].clientX : null;
-      }, { passive: true });
-      window.addEventListener('touchend', function (e) {
-        if (touchX === null || e.touches.length > 0) { touchX = null; return; }
-        if (e.changedTouches[0].clientX - touchX > 70) goPrev();
-        touchX = null;
-      });
-
-      // Back button restores this page faded out; bring it back.
-      window.addEventListener('pageshow', function (e) {
-        if (e.persisted) {
-          leaving = false;
+      BTD.nav({
+        prev: document.querySelector('[data-prev]'),
+        next: document.querySelector('[data-next]'),
+        leave: function () {
+          music.leave(550);
+          document.body.classList.add('is-leaving');
+          return 600;
+        },
+        // Back button restores this page faded out; bring it back.
+        restore: function () {
           document.body.classList.remove('is-leaving');
           music.restore(2000);
         }
