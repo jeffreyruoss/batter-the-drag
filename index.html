@@ -16,7 +16,7 @@
   <link rel="preload" href="wendt/tunnel-sm.webp" as="image" media="(max-width: 699px)">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Italiana&family=Jost:wght@300;400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Italiana&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
   <script>document.documentElement.classList.replace('no-js', 'js');</script>
   <style>
     :root {
@@ -185,7 +185,8 @@
     }
 
     .eyebrow {
-      font-size: 12px;
+      font-size: 16px;
+      font-weight: 500;
       letter-spacing: .42em;
       text-transform: uppercase;
       color: var(--ink);
@@ -196,18 +197,17 @@
       display: flex;
       flex-wrap: wrap;
       gap: 6px 18px;
-      font-family: 'Italiana', serif;
-      font-size: 19px;
-      letter-spacing: .08em;
-      color: var(--ink);
+      font-size: 17px;
+      font-weight: 400;
+      letter-spacing: .04em;
+      color: #a8a17f;
     }
 
     .tracks li span {
-      font-family: 'Jost', sans-serif;
-      font-size: 10px;
+      font-size: 11px;
       letter-spacing: .2em;
-      margin-right: 6px;
-      color: var(--ink-dim);
+      margin-right: 7px;
+      color: var(--ink);
       vertical-align: middle;
     }
 
@@ -342,8 +342,7 @@
     }
 
     @media (max-width: 699px) {
-      .eyebrow { font-size: 11px; }
-      .tracks { font-size: 16px; }
+      .tracks { font-size: 15px; }
       .listen { padding: 14px 20px; font-size: 12px; letter-spacing: .26em; }
       .social svg { width: 26px; height: 26px; }
       .title .band { font-size: 9.4vw; }
