@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Batter The Drag</title>
+  <link rel="preload" href="batter-the-drag.svg" as="image">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    /* disable horz and vert window scrolling */
+    body {
+      overflow: hidden;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+    }
+
+    body {
+      background-color: black;
+      background-image: url('bg-2.webp');
+      background-size: cover;
+      background-position: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 50px;
+    }
+
+    .logo {
+      width: 100%;
+      max-width: 1100px;
+      height: 0;
+      padding-bottom: 37%;
+      position: relative;
+      /* overflow: hidden; */
+    }
+
+    @media (min-width: 1200px) {
+      .logo {
+        padding-bottom: 24%;
+      }
+    }
+
+    .mask-container {
+      mask: url('batter-the-drag.svg') no-repeat center;
+      -webkit-mask: url('batter-the-drag.svg') no-repeat center;
+      mask-size: contain;
+      -webkit-mask-size: contain;
+      width: 90%;
+      max-width: 1200px;
+      height: auto;
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .mask-container img.universe {
+      width: 100%;
+      height: 100%;
+      animation: fadeIn 3s ease-in-out, rotateAndScale 100s infinite linear;
+    }
+    @media (min-width: 1024px) {
+      .mask-container img.universe {
+        animation: fadeIn 3s ease-in-out, rotateAndScale 200s infinite linear;
+      }
+    }
+
+    .cta {
+      color: #808492;
+      font-size: 16px;
+      line-height: 1.3;
+      text-align: center;
+      /* animation: pulse 2s infinite; */
+      animation: fadeIn 3s ease-in-out;
+      font-family: 'Arial', sans-serif;
+      z-index: 1;
+    }
+
+    .cta a {
+      color: #6693C8;
+      transition: all 0.3s;
+    }
+
+    .cta a:hover {
+      color: #fff;
+    }
+
+    @media (min-width: 1024px) {
+      .cta {
+        font-size: 19px;
+        line-height: 1.5;
+      }
+    }
+
+    .social-media-container {
+      width: 100%;
+      z-index: 1;
+      /* animation: slideUp 2s ease-in-out; */
+      animation: fadeIn 3s ease-in-out;
+    }
+
+    .social-media {
+      display: flex;
+      justify-content: center;
+    }
+
+    .social-media a {
+      margin: 0 10px;
+      transition: transform 0.2s;
+    }
+
+    .social-media a:hover {
+      transform: scale(1.1);
+    }
+
+    .social-media svg {
+      width: 40px;
+      height: 40px;
+      fill: #6693C8;
+      transition: fill 0.2s;
+    }
+
+    .social-media a:hover svg {
+      fill: #347ed3;
+    }
+
+     @keyframes fadeIn {
+      0% {
+        opacity: 0;
+      }
+      100% {
+        opacity: 1;
+      }
+    }
+
+    @keyframes rotateAndScale {
+      0% {
+        transform: rotate(0deg) scale(1);
+      }
+      50% {
+        transform: rotate(180deg) scale(1.6);
+      }
+      100% {
+        transform: rotate(360deg) scale(1);
+      }
+    }
+
+    @keyframes slideUp {
+      0% {
+        transform: translateY(240px);
+        opacity: 0;
+      }
+      80% {
+        transform: translateY(240px);
+        opacity: 0;
+      }
+      100% {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+        opacity: 0.5;
+      }
+      50% {
+        transform: scale(1.1);
+        opacity: 1;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 0.5;
+      }
+    }
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      /* top: 50%; */
+      /* left: 50%; */
+      z-index: -1;
+      /* transform: translate(-50%, -50%); */
+      /* max-width: 85vw; */
+      /* max-height: 85vw; */
+    }
+    /* Big arrow back to the new album (home page) */
+    .arrow {
+      position: fixed;
+      top: 50%;
+      left: clamp(8px, 3vw, 56px);
+      z-index: 2;
+      display: grid;
+      justify-items: center;
+      gap: 14px;
+      padding: 16px;
+      transform: translateY(-50%);
+      color: #6693C8;
+      text-decoration: none;
+      font-family: 'Arial', sans-serif;
+      animation: fadeIn 3s ease-in-out;
+      transition: color 0.3s;
+    }
+
+    .arrow svg {
+      width: clamp(38px, 5vw, 70px);
+      height: clamp(76px, 10vw, 140px);
+      stroke: currentColor;
+      stroke-width: 1.5;
+      fill: none;
+      overflow: visible;
+      transition: transform 0.3s;
+    }
+
+    .arrow .label {
+      font-size: 10px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+    }
+
+    .arrow:hover {
+      color: #fff;
+    }
+
+    .arrow:hover svg {
+      transform: translateX(-8px);
+    }
+
+    @media (max-width: 699px) {
+      .arrow {
+        top: auto;
+        bottom: 16px;
+        left: 4px;
+        transform: none;
+      }
+
+      .arrow svg {
+        width: 34px;
+        height: 68px;
+      }
+
+      .arrow .label {
+        display: none;
+      }
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap;
+    }
+
+    /* Arriving from the new album: fade out of its tunnel light */
+    .arrive-light {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      pointer-events: none;
+      background: #efebcb;
+      opacity: 0;
+    }
+
+    .arriving .arrive-light {
+      animation: fadeOut 1.6s ease-in-out both;
+    }
+
+    @keyframes fadeOut {
+      0% {
+        opacity: 1;
+      }
+      100% {
+        opacity: 0;
+      }
+    }
+
+    /* Leaving for the new album: fade to black */
+    body {
+      transition: opacity 0.6s ease-in;
+    }
+
+    body.is-leaving {
+      opacity: 0;
+    }
+  </style>
+</head>
+<body>
+  <script>
+    try {
+      if (sessionStorage.getItem('btd-arrive') === 'light') {
+        sessionStorage.removeItem('btd-arrive');
+        document.body.classList.add('arriving');
+      }
+    } catch (e) {}
+  </script>
+  <div class="arrive-light" aria-hidden="true"></div>
+  <canvas id="particlesCanvas"></canvas>
+  <div class="logo">
+    <div class="mask-container">
+      <img src="text-bg-2.webp" class="universe" alt="Batter The Drag Mask">
+    </div>
+  </div>
+  <div class="cta">Listen to the new EP <br><a href="https://batterthedrag.bandcamp.com/album/the-universe-is-ours" target="_blank">The Universe Is Ours</a></div>
+  <div class="social-media-container">
+    <div class="social-media">
+      <a href="https://batterthedrag.bandcamp.com/album/the-universe-is-ours" target="_blank" aria-label="Bandcamp">
+        <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" x="0" y="0" viewBox="0 0 682.7 682.7" style="enable-background:new 0 0 682.7 682.7" xml:space="preserve"><style>.st0{fill:#fff}</style><path d="M682.6 341.3C682.6 152.8 529.8 0 341.3 0S0 152.8 0 341.3s152.8 341.3 341.3 341.3 341.3-152.7 341.3-341.3zm-240.8 96.6c-17.8 0-37-4.5-45.6-22.4h-.5v18.7h-27.5v-188L266.5 433.8h-218l101.8-187.9h246.9v69.6h.5c7.9-13.2 24.5-21.4 39.3-21.4 41.5 0 61.7 32.7 61.7 72.5 0 36.7-17.9 71.3-56.9 71.3zm68.7-70.4c0-41.1 21.7-73.3 65-73.3 30.6 0 56.6 15.8 59.4 49.3h-29c-2.3-16.6-14-25.6-30.1-25.6-15 0-36.2 8.2-36.2 49.6 0 22.7 9.7 46.7 34.9 46.7 16.8 0 28.5-11.6 31.4-31.1H635c-5.4 35.3-26.5 54.9-60.4 54.9-41.4-.1-64.1-30.4-64.1-70.5z"/><path d="M433.1 317.9c-24.5 0-37 19.3-37 48.3 0 27.4 13.5 48 37 48 26.5 0 36.5-24.3 36.5-48 0-24.8-12.5-48.3-36.5-48.3z"/><path class="st0" d="M433.1 317.9z"/><path d="M433.1 414.2c-23.4 0-37-20.6-37-48 0-29 12.5-48.3 37-48.3 24 0 36.4 23.5 36.5 48.3 0 23.7-10 48-36.5 48z"/><path class="st0" d="M368.1 245.9v.3l.2-.3z"/></svg>
+      </a>
+      <a href="https://open.spotify.com/artist/7n0isdj3K0MwurrqOzG4f8" target="_blank" aria-label="Spotify">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" style="enable-background:new 0 0 20 20" xml:space="preserve"><path d="M15.9 8.9C12.7 7 7.4 6.8 4.3 7.8c-.5.1-1-.1-1.2-.6-.1-.6.2-1.1.7-1.2 3.6-1.1 9.4-.8 13.1 1.4.4.2.6.8.4 1.3-.3.3-.9.4-1.4.2m-.1 2.8c-.2.4-.7.5-1 .2-2.7-1.6-6.8-2.1-9.9-1.1-.4.1-.9-.1-1-.5-.1-.4 0-.9.4-.9 3.7-1.1 8.1-.6 11.2 1.3.4.2.5.7.3 1m-1.2 2.8c-.2.3-.6.4-.9.2-2.4-1.4-5.3-1.8-8.8-.9-.3.1-.6-.1-.8-.4-.1-.4.2-.6.5-.8 3.8-.9 7.1-.5 9.7 1.1.4.1.5.4.3.8M10 0C4.5 0 0 4.5 0 10s4.5 10 10 10 10-4.5 10-10S15.5 0 10 0z"/></svg>
+      </a>
+      <a href="https://www.instagram.com/batterthedrag/" target="_blank" aria-label="Instagram">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1146.6 1146.6" style="enable-background:new 0 0 1146.6 1146.6" xml:space="preserve"><path d="M788.3 358.3h-95.5v95.6h95.5zM573.3 671.3c52.6 0 97.9-43 97.9-97.9 0-21.5-7.2-40.6-19.1-57.3-16.7-23.9-47.8-40.6-78.8-40.6-31.1 0-62.1 16.7-78.8 40.6-11.9 16.7-19.1 35.8-19.1 57.3 0 54.9 45.4 97.9 97.9 97.9z"/><path d="M573.3 0C256.7 0 0 256.7 0 573.3s256.7 573.3 573.3 573.3 573.3-256.7 573.3-573.3S890 0 573.3 0zm279.5 745.3c0 59.7-47.8 107.5-107.5 107.5h-344c-59.7 0-107.5-47.8-107.5-107.5v-344c0-59.7 47.8-107.5 107.5-107.5h344c59.7 0 107.5 47.8 107.5 107.5v344z"/><path d="M714.3 516c7.2 16.7 11.9 38.2 11.9 57.3 0 83.6-69.3 152.9-152.9 152.9-83.6 0-152.9-69.3-152.9-152.9 0-19.1 4.8-40.6 11.9-57.3h-83.6v229.3c0 28.7 23.9 52.6 52.6 52.6h344c28.7 0 52.6-23.9 52.6-52.6V516h-83.6z"/></svg>
+      </a>
+      <a href="https://www.facebook.com/batterthedrag" target="_blank" aria-label="Facebook">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 19.9" style="enable-background:new 0 0 20 19.9" xml:space="preserve"><path d="M10 0C4.5 0 0 4.5 0 10c0 5 3.7 9.1 8.4 9.9v-7H5.9V10h2.5V7.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V10h2.8l-.4 2.9h-2.3v7c4.9-.8 8.5-5 8.4-9.9 0-5.5-4.5-10-10-10z"/></svg>
+      </a>
+    </div>
+  </div>
+  <a class="arrow" href="./" data-prev>
+    <span class="sr-only">Previous: The Wendt LP</span>
+    <svg viewBox="0 0 50 100" aria-hidden="true"><path d="M48 2 2 50 48 98"/></svg>
+    <span class="label" aria-hidden="true">The Wendt LP</span>
+  </a>
+  <script>
+    (function () {
+      var prev = document.querySelector('[data-prev]');
+      var leaving = false;
+
+      function goPrev() {
+        if (leaving) return;
+        leaving = true;
+        document.body.classList.add('is-leaving');
+        setTimeout(function () { location.href = prev.href; }, 600);
+      }
+
+      prev.addEventListener('click', function (e) {
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+        e.preventDefault();
+        goPrev();
+      });
+
+      window.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowLeft') goPrev();
+      });
+
+      var touchX = null;
+      window.addEventListener('touchstart', function (e) { touchX = e.touches[0].clientX; }, { passive: true });
+      window.addEventListener('touchend', function (e) {
+        if (touchX === null) return;
+        if (e.changedTouches[0].clientX - touchX > 70) goPrev();
+        touchX = null;
+      });
+
+      // Back button restores this page faded out; bring it back.
+      window.addEventListener('pageshow', function (e) {
+        if (e.persisted) {
+          leaving = false;
+          document.body.classList.remove('is-leaving');
+        }
+      });
+    })();
+  </script>
+  <script>
+    const mobileConfig = {
+        sizeRange: [0.8, 2.3],
+        speedRange: [0.1, 0.4],
+        opacityRange: [0.1, 0.4],
+        particleCount: 100
+    };
+
+    const desktopConfig = {
+        sizeRange: [1, 3],
+        speedRange: [0.2, 0.6],
+        opacityRange: [0.1, 0.4],
+        particleCount: 200
+    };
+
+    function onMount(callback) {
+        document.addEventListener('DOMContentLoaded', callback);
+    }
+
+    onMount(function () {
+        const isMobile = window.innerWidth <= 768;
+        const particleConfig = isMobile ? mobileConfig : desktopConfig;
+
+        const canvas = document.getElementById('particlesCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let particlesArray = [];
+
+        function Particle(x, y, size, speed, directionAngle, finalOpacity) {
+            this.x = x;
+            this.y = y;
+            this.size = size;
+            this.speed = speed;
+            this.directionX = Math.cos(directionAngle) * speed;
+            this.directionY = Math.sin(directionAngle) * speed;
+            this.finalOpacity = finalOpacity;
+            this.opacity = 0;
+
+            this.update = function () {
+                this.x += this.directionX;
+                this.y += this.directionY;
+                this.fadeIn();
+            };
+
+            this.fadeIn = function () {
+                if (this.opacity < this.finalOpacity) {
+                    this.opacity += 0.005;
+                }
+            };
+
+            this.draw = function () {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.closePath();
+                ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+                ctx.fill();
+            };
+        }
+
+        function init() {
+            particlesArray = [];
+            for (let i = 0; i < particleConfig.particleCount; i++) {
+                let x = Math.random() * canvas.width;
+                let y = Math.random() * canvas.height;
+                let size = Math.random() * (particleConfig.sizeRange[1] - particleConfig.sizeRange[0]) + particleConfig.sizeRange[0];
+                let speed = Math.random() * (particleConfig.speedRange[1] - particleConfig.speedRange[0]) + particleConfig.speedRange[0];
+                let directionAngle = Math.floor(Math.random() * 360);
+                let opacity = Math.random() * (particleConfig.opacityRange[1] - particleConfig.opacityRange[0]) + particleConfig.opacityRange[0];
+                particlesArray.push(new Particle(x, y, size, speed, directionAngle, opacity));
+            }
+        }
+
+        init();
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < particlesArray.length; i++) {
+                particlesArray[i].update();
+                particlesArray[i].draw();
+            }
+            requestAnimationFrame(animate);
+        }
+
+        // Get the query parameters from the current URL
+        const params = new URLSearchParams(window.location.search);
+
+        // If the 'p' parameter is '1', run the animate function
+        if (params.get('p') === '1') {
+            animate();
+        }
+    });
+  </script>
+</body>
+</html>

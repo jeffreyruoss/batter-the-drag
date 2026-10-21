@@ -1,320 +1,708 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="no-js">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Batter The Drag</title>
-  <link rel="preload" href="batter-the-drag.svg" as="image">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Batter The Drag · The Wendt LP</title>
+  <meta name="description" content="The Wendt LP, the new album from Batter The Drag. Listen on Bandcamp.">
+  <meta property="og:title" content="Batter The Drag · The Wendt LP">
+  <meta property="og:description" content="The new LP. Listen on Bandcamp.">
+  <meta property="og:image" content="https://batterthedrag.com/wendt/cover.jpg">
+  <meta property="og:url" content="https://batterthedrag.com/">
+  <meta property="og:type" content="music.album">
+  <meta name="theme-color" content="#000000">
   <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="preload" href="wendt/tunnel.webp" as="image" media="(min-width: 700px)">
+  <link rel="preload" href="wendt/tunnel-sm.webp" as="image" media="(max-width: 699px)">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Italiana&family=Jost:wght@300;400&display=swap" rel="stylesheet">
+  <script>document.documentElement.classList.replace('no-js', 'js');</script>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    :root {
+      --ink: #7a7559;          /* album-cover title color, lifted a little for screens */
+      --ink-dim: #5a5643;
+      --light: #efebcb;        /* the light at the end of the tunnel */
+      --leaf: #a9c873;
+      --ease-out: cubic-bezier(.16, 1, .3, 1);
+      --gutter: clamp(20px, 5vw, 80px);
+      /* Tunnel opening position inside .scene, set by JS. Fallbacks match the CSS cover sizing. */
+      --ox: 56%;
+      --oy: 54%;
+      --os: 18vw;
     }
 
-    /* disable horz and vert window scrolling */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body { height: 100%; }
+
     body {
+      background: #000;
+      color: var(--ink);
+      font-family: 'Jost', 'Helvetica Neue', Arial, sans-serif;
+      font-weight: 300;
       overflow: hidden;
+      -webkit-font-smoothing: antialiased;
     }
 
-    html, body {
-      width: 100%;
-      height: 100%;
+    a { color: inherit; }
+
+    /* ---------- Scene: tunnel, light, dust ---------- */
+
+    .scene {
+      position: fixed;
+      inset: -3%;               /* bleed so the parallax never shows an edge */
+      transform: translate3d(var(--px, 0px), var(--py, 0px), 0);
     }
 
-    body {
-      background-color: black;
-      background-image: url('bg-2.webp');
-      background-size: cover;
-      background-position: center;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      gap: 50px;
-    }
-
-    .logo {
-      width: 100%;
-      max-width: 1100px;
-      height: 0;
-      padding-bottom: 37%;
-      position: relative;
-      /* overflow: hidden; */
-    }
-
-    @media (min-width: 1200px) {
-      .logo {
-        padding-bottom: 24%;
-      }
-    }
-
-    .mask-container {
-      mask: url('batter-the-drag.svg') no-repeat center;
-      -webkit-mask: url('batter-the-drag.svg') no-repeat center;
-      mask-size: contain;
-      -webkit-mask-size: contain;
-      width: 90%;
-      max-width: 1200px;
-      height: auto;
+    .zoom {
       position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      left: 50%;
+      inset: 0;
+      transform-origin: var(--ox) var(--oy);
+    }
+
+    .bg {
+      position: absolute;
+      inset: 0;
+      background: #000 url('wendt/tunnel.webp') no-repeat 56% 50% / cover;
+      transform-origin: var(--ox) var(--oy);
+      will-change: transform;
+    }
+
+    @media (max-width: 699px) {
+      .bg { background-image: url('wendt/tunnel-sm.webp'); }
+    }
+
+    .glow {
+      position: absolute;
+      left: var(--ox);
+      top: var(--oy);
+      width: calc(var(--os) * 4);
+      aspect-ratio: 1.3;
       transform: translate(-50%, -50%);
+      background:
+        radial-gradient(closest-side, rgba(255, 252, 225, .42), rgba(232, 236, 190, .16) 35%, rgba(150, 200, 110, .06) 60%, transparent);
+      mix-blend-mode: screen;
+      pointer-events: none;
     }
 
-    .mask-container img.universe {
+    #dust {
+      position: absolute;
+      inset: 0;
       width: 100%;
       height: 100%;
-      animation: fadeIn 3s ease-in-out, rotateAndScale 100s infinite linear;
-    }
-    @media (min-width: 1024px) {
-      .mask-container img.universe {
-        animation: fadeIn 3s ease-in-out, rotateAndScale 200s infinite linear;
-      }
+      pointer-events: none;
     }
 
-    .cta {
-      color: #808492;
-      font-size: 16px;
-      line-height: 1.3;
-      text-align: center;
-      /* animation: pulse 2s infinite; */
-      animation: fadeIn 3s ease-in-out;
-      font-family: 'Arial', sans-serif;
-      z-index: 1;
+    .grain {
+      position: fixed;
+      inset: -50%;
+      pointer-events: none;
+      opacity: .09;
+      mix-blend-mode: overlay;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      animation: grain 1s steps(6) infinite;
     }
 
-    .cta a {
-      color: #6693C8;
-      transition: all 0.3s;
+    .vignette {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(ellipse 85% 75% at 55% 55%, transparent 40%, rgba(0, 0, 0, .75) 100%);
     }
 
-    .cta a:hover {
-      color: #fff;
+    /* The whiteout we walk into when leaving for the next page */
+    .exit-light {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(circle at var(--ox) var(--oy), #fffdf0, var(--light) 40%, #d9dcb0);
+      opacity: 0;
+      z-index: 20;
     }
 
-    @media (min-width: 1024px) {
-      .cta {
-        font-size: 19px;
-        line-height: 1.5;
-      }
+    /* ---------- Type ---------- */
+
+    .title {
+      position: fixed;
+      top: calc(var(--gutter) + env(safe-area-inset-top));
+      left: var(--gutter);
+      right: var(--gutter);
+      z-index: 5;
+      font-family: 'Italiana', 'Didot', serif;
+      font-weight: 400;
+      text-transform: uppercase;
+      line-height: .95;
+      font-kerning: none;       /* the split letters can't kern, so the sheen copy mustn't either */
+      transform: translate3d(calc(var(--px, 0px) * -.4), calc(var(--py, 0px) * -.4), 0);
     }
 
-    .social-media-container {
-      width: 100%;
-      z-index: 1;
-      /* animation: slideUp 2s ease-in-out; */
-      animation: fadeIn 3s ease-in-out;
+    .title .band,
+    .title .album {
+      display: block;
+      position: relative;
+      white-space: nowrap;
     }
 
-    .social-media {
-      display: flex;
-      justify-content: center;
+    .title .band {
+      font-size: clamp(2.1rem, 7.6vw, 8.2rem);
+      letter-spacing: -.01em;
     }
 
-    .social-media a {
-      margin: 0 10px;
-      transition: transform 0.2s;
+    .title .album {
+      font-size: clamp(1.25rem, 4.3vw, 4.6rem);
+      margin-top: .25em;
+      color: var(--ink);
     }
 
-    .social-media a:hover {
-      transform: scale(1.1);
-    }
-
-    .social-media svg {
-      width: 40px;
-      height: 40px;
-      fill: #6693C8;
-      transition: fill 0.2s;
-    }
-
-    .social-media a:hover svg {
-      fill: #347ed3;
-    }
-
-     @keyframes fadeIn {
-      0% {
-        opacity: 0;
-      }
-      100% {
-        opacity: 1;
-      }
-    }
-
-    @keyframes rotateAndScale {
-      0% {
-        transform: rotate(0deg) scale(1);
-      }
-      50% {
-        transform: rotate(180deg) scale(1.6);
-      }
-      100% {
-        transform: rotate(360deg) scale(1);
-      }
-    }
-
-    @keyframes slideUp {
-      0% {
-        transform: translateY(240px);
-        opacity: 0;
-      }
-      80% {
-        transform: translateY(240px);
-        opacity: 0;
-      }
-      100% {
-        transform: translateY(0);
-        opacity: 1;
-      }
-    }
-
-    @keyframes pulse {
-      0% {
-        transform: scale(1);
-        opacity: 0.5;
-      }
-      50% {
-        transform: scale(1.1);
-        opacity: 1;
-      }
-      100% {
-        transform: scale(1);
-        opacity: 0.5;
-      }
-    }
-    canvas {
+    /* A slow sheen of tunnel light across the lettering */
+    .title .band::after,
+    .title .album::after {
+      content: attr(data-text);
+      content: attr(data-text) / '';
       position: absolute;
-      top: 0;
-      left: 0;
-      /* top: 50%; */
-      /* left: 50%; */
+      inset: 0;
+      color: transparent;
+      background: linear-gradient(100deg, transparent 42%, rgba(239, 235, 203, .9) 50%, transparent 58%) no-repeat;
+      background-size: 250% 100%;
+      background-position: 120% 0;
+      -webkit-background-clip: text;
+      background-clip: text;
+      animation: sheen 11s 6s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    .title .album::after { animation-delay: 6.4s; }
+
+    .info {
+      position: fixed;
+      left: var(--gutter);
+      bottom: calc(var(--gutter) + env(safe-area-inset-bottom));
+      z-index: 5;
+      display: grid;
+      gap: 22px;
+      max-width: min(440px, calc(100vw - var(--gutter) * 2 - 70px));
+    }
+
+    .eyebrow {
+      font-size: 12px;
+      letter-spacing: .42em;
+      text-transform: uppercase;
+      color: var(--ink);
+    }
+
+    .tracks {
+      list-style: none;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 18px;
+      font-family: 'Italiana', serif;
+      font-size: 19px;
+      letter-spacing: .08em;
+      color: var(--ink);
+    }
+
+    .tracks li span {
+      font-family: 'Jost', sans-serif;
+      font-size: 10px;
+      letter-spacing: .2em;
+      margin-right: 6px;
+      color: var(--ink-dim);
+      vertical-align: middle;
+    }
+
+    .listen {
+      --fill: 0%;
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      justify-self: start;
+      padding: 16px 26px;
+      border: 1px solid rgba(122, 117, 89, .7);
+      color: var(--light);
+      text-decoration: none;
+      font-size: 13px;
+      letter-spacing: .32em;
+      text-transform: uppercase;
+      overflow: hidden;
+      isolation: isolate;
+      transition: color .5s var(--ease-out), border-color .5s var(--ease-out), box-shadow .6s var(--ease-out);
+    }
+
+    .listen::before {
+      content: '';
+      position: absolute;
+      inset: 0;
       z-index: -1;
-      /* transform: translate(-50%, -50%); */
-      /* max-width: 85vw; */
-      /* max-height: 85vw; */
+      background: var(--light);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform .6s var(--ease-out);
+    }
+
+    .listen svg {
+      width: 22px;
+      height: 10px;
+      stroke: currentColor;
+      fill: none;
+      transition: transform .5s var(--ease-out);
+    }
+
+    .listen:hover,
+    .listen:focus-visible {
+      color: #111;
+      border-color: var(--light);
+      box-shadow: 0 0 40px rgba(239, 235, 203, .25);
+    }
+
+    .listen:hover::before,
+    .listen:focus-visible::before { transform: scaleX(1); }
+    .listen:hover svg,
+    .listen:focus-visible svg { transform: translateX(6px); }
+
+    .social {
+      display: flex;
+      gap: 18px;
+    }
+
+    .social a {
+      display: block;
+      transition: transform .3s var(--ease-out);
+    }
+
+    .social svg {
+      width: 30px;
+      height: 30px;
+      fill: var(--ink);
+      transition: fill .3s, filter .3s;
+    }
+
+    .social a:hover { transform: translateY(-3px); }
+    .social a:hover svg,
+    .social a:focus-visible svg {
+      fill: var(--light);
+      filter: drop-shadow(0 0 10px rgba(239, 235, 203, .45));
+    }
+
+    /* ---------- Big next arrow ---------- */
+
+    .arrow {
+      position: fixed;
+      top: 50%;
+      right: clamp(8px, 3vw, 56px);
+      z-index: 6;
+      display: grid;
+      justify-items: center;
+      gap: 14px;
+      padding: 16px;
+      transform: translateY(-50%);
+      color: var(--ink);
+      text-decoration: none;
+      filter: drop-shadow(0 0 8px rgba(0, 0, 0, .9));
+      transition: color .4s;
+    }
+
+    .arrow svg {
+      width: clamp(38px, 5vw, 70px);
+      height: clamp(76px, 10vw, 140px);
+      stroke: currentColor;
+      stroke-width: 1;
+      fill: none;
+      overflow: visible;
+      animation: nudge 3.2s 5s ease-in-out infinite;
+      transition: filter .4s;
+    }
+
+    .arrow .label {
+      font-size: 10px;
+      letter-spacing: .3em;
+      text-transform: uppercase;
+      writing-mode: vertical-rl;
+      opacity: .8;
+    }
+
+    .arrow:hover,
+    .arrow:focus-visible { color: var(--light); }
+    .arrow:hover svg,
+    .arrow:focus-visible svg {
+      animation-play-state: paused;
+      filter: drop-shadow(0 0 14px rgba(239, 235, 203, .6));
+    }
+
+    :focus-visible { outline: 1px solid var(--light); outline-offset: 4px; }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap;
+    }
+
+    @media (max-width: 699px) {
+      .eyebrow { font-size: 11px; }
+      .tracks { font-size: 16px; }
+      .listen { padding: 14px 20px; font-size: 12px; letter-spacing: .26em; }
+      .social svg { width: 26px; height: 26px; }
+      .title .band { font-size: 9.4vw; }
+      .title .album { font-size: 5.6vw; }
+      /* The opening sits mid-screen on phones, so park the arrow bottom-right, clear of the light */
+      .arrow { top: auto; bottom: calc(var(--gutter) + env(safe-area-inset-bottom) - 16px); right: 4px; transform: none; }
+      .arrow svg { width: 34px; height: 68px; }
+      .arrow .label { display: none; }
+    }
+
+    @media (max-height: 520px) {
+      .tracks { display: none; }
+      .info { gap: 14px; }
+    }
+
+    /* ---------- Motion ---------- */
+
+    @keyframes enter {
+      from { opacity: 0; transform: scale(1.4); filter: brightness(.2) blur(6px); }
+      60%  { opacity: 1; }
+      to   { opacity: 1; transform: scale(1.06); filter: brightness(1) blur(0); }
+    }
+
+    @keyframes drift {
+      from { transform: scale(1.06); }
+      to   { transform: scale(1.16); }
+    }
+
+    @keyframes glow-in {
+      from { opacity: 0; transform: translate(-50%, -50%) scale(.3); }
+      to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    }
+
+    /* Light through leaves: uneven, never quite still */
+    @keyframes flicker {
+      0%, 100% { opacity: 1; }
+      12% { opacity: .82; }
+      19% { opacity: .95; }
+      33% { opacity: .78; }
+      41% { opacity: 1; }
+      58% { opacity: .86; }
+      64% { opacity: .97; }
+      79% { opacity: .8; }
+      88% { opacity: .93; }
+    }
+
+    @keyframes letter {
+      from { opacity: 0; filter: blur(14px); transform: translateY(.18em) scale(1.08); }
+      to   { opacity: 1; filter: blur(0); transform: none; }
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(24px); filter: blur(6px); }
+      to   { opacity: 1; transform: none; filter: blur(0); }
+    }
+
+    @keyframes arrow-in {
+      from { opacity: 0; translate: -30px 0; }
+      to   { opacity: 1; translate: 0 0; }
+    }
+
+    @keyframes nudge {
+      0%, 70%, 100% { transform: translateX(0); }
+      80% { transform: translateX(10px); }
+      90% { transform: translateX(0); }
+      95% { transform: translateX(5px); }
+    }
+
+    @keyframes sheen {
+      0%   { background-position: 120% 0; }
+      40%, 100% { background-position: -20% 0; }
+    }
+
+    @keyframes grain {
+      0%   { transform: translate(0, 0); }
+      20%  { transform: translate(-6%, 4%); }
+      40%  { transform: translate(5%, -7%); }
+      60%  { transform: translate(-3%, 8%); }
+      80%  { transform: translate(7%, -2%); }
+      100% { transform: translate(0, 0); }
+    }
+
+    @keyframes plunge {
+      to { transform: scale(7); filter: brightness(2.2); }
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .js .bg { animation: enter 5.5s .5s var(--ease-out) both, drift 40s 6s ease-in-out infinite alternate; }
+      .js .glow { animation: glow-in 3s .2s var(--ease-out) both, flicker 7s 3.2s linear infinite; }
+      .js .split > span { display: inline-block; white-space: pre; animation: letter 1.8s calc(1.6s + var(--i) * 70ms) var(--ease-out) both; }
+      .js .album.split > span { animation-delay: calc(2.9s + var(--i) * 55ms); }
+      .js .info > * { animation: rise 1.4s var(--ease-out) both; }
+      .js .info > :nth-child(1) { animation-delay: 3.6s; }
+      .js .info > :nth-child(2) { animation-delay: 3.8s; }
+      .js .info > :nth-child(3) { animation-delay: 4s; }
+      .js .info > :nth-child(4) { animation-delay: 4.2s; }
+      .js .arrow { animation: arrow-in 1.6s 4.4s var(--ease-out) both; }
+      .js #dust { animation: rise 4s 2.5s ease both; }
+
+      /* Walking into the light */
+      .is-leaving .zoom { animation: plunge 1.6s cubic-bezier(.7, 0, .84, 0) forwards; }
+      .is-leaving .exit-light { opacity: 1; transition: opacity .9s .65s ease-in; }
+      .is-leaving .title,
+      .is-leaving .info,
+      .is-leaving .arrow { opacity: 0; filter: blur(8px); transition: opacity .6s, filter .6s; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .grain { animation: none; }
+      .title .band::after,
+      .title .album::after { display: none; }
+      .bg { transform: scale(1.06); }
     }
   </style>
 </head>
 <body>
-  <canvas id="particlesCanvas"></canvas>
-  <div class="logo">
-    <div class="mask-container">
-      <img src="text-bg-2.webp" class="universe" alt="Batter The Drag Mask">
+  <div class="scene" aria-hidden="true">
+    <div class="zoom">
+      <div class="bg"></div>
+      <div class="glow"></div>
+      <canvas id="dust"></canvas>
     </div>
   </div>
-  <div class="cta">Listen to the new EP <br><a href="https://batterthedrag.bandcamp.com/album/the-universe-is-ours" target="_blank">The Universe Is Ours</a></div>
-  <div class="social-media-container">
-    <div class="social-media">
-      <a href="https://batterthedrag.bandcamp.com/album/the-universe-is-ours" target="_blank" aria-label="Bandcamp">
-        <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" x="0" y="0" viewBox="0 0 682.7 682.7" style="enable-background:new 0 0 682.7 682.7" xml:space="preserve"><style>.st0{fill:#fff}</style><path d="M682.6 341.3C682.6 152.8 529.8 0 341.3 0S0 152.8 0 341.3s152.8 341.3 341.3 341.3 341.3-152.7 341.3-341.3zm-240.8 96.6c-17.8 0-37-4.5-45.6-22.4h-.5v18.7h-27.5v-188L266.5 433.8h-218l101.8-187.9h246.9v69.6h.5c7.9-13.2 24.5-21.4 39.3-21.4 41.5 0 61.7 32.7 61.7 72.5 0 36.7-17.9 71.3-56.9 71.3zm68.7-70.4c0-41.1 21.7-73.3 65-73.3 30.6 0 56.6 15.8 59.4 49.3h-29c-2.3-16.6-14-25.6-30.1-25.6-15 0-36.2 8.2-36.2 49.6 0 22.7 9.7 46.7 34.9 46.7 16.8 0 28.5-11.6 31.4-31.1H635c-5.4 35.3-26.5 54.9-60.4 54.9-41.4-.1-64.1-30.4-64.1-70.5z"/><path d="M433.1 317.9c-24.5 0-37 19.3-37 48.3 0 27.4 13.5 48 37 48 26.5 0 36.5-24.3 36.5-48 0-24.8-12.5-48.3-36.5-48.3z"/><path class="st0" d="M433.1 317.9z"/><path d="M433.1 414.2c-23.4 0-37-20.6-37-48 0-29 12.5-48.3 37-48.3 24 0 36.4 23.5 36.5 48.3 0 23.7-10 48-36.5 48z"/><path class="st0" d="M368.1 245.9v.3l.2-.3z"/></svg>
+  <div class="grain" aria-hidden="true"></div>
+  <div class="vignette" aria-hidden="true"></div>
+
+  <h1 class="title" aria-label="Batter The Drag. The Wendt LP">
+    <span class="band split" data-text="Batter The Drag" aria-hidden="true">Batter The Drag</span>
+    <span class="album split" data-text="The Wendt LP" aria-hidden="true">The Wendt LP</span>
+  </h1>
+
+  <div class="info">
+    <p class="eyebrow">The new LP</p>
+    <ol class="tracks">
+      <li><span>I</span>Masmusa</li>
+      <li><span>II</span>Pangsaging</li>
+      <li><span>III</span>Banane</li>
+    </ol>
+    <a class="listen" href="https://batterthedrag.bandcamp.com/album/the-wendt" target="_blank" rel="noopener">
+      Listen on Bandcamp
+      <svg viewBox="0 0 22 10" aria-hidden="true"><path d="M0 5h21M16 .5 21 5l-5 4.5"/></svg>
+    </a>
+    <nav class="social" aria-label="Batter The Drag elsewhere">
+      <a href="https://batterthedrag.bandcamp.com/album/the-wendt" target="_blank" rel="noopener" aria-label="Bandcamp">
+        <svg viewBox="0 0 682.7 682.7" aria-hidden="true"><path d="M682.6 341.3C682.6 152.8 529.8 0 341.3 0S0 152.8 0 341.3s152.8 341.3 341.3 341.3 341.3-152.7 341.3-341.3zm-240.8 96.6c-17.8 0-37-4.5-45.6-22.4h-.5v18.7h-27.5v-188L266.5 433.8h-218l101.8-187.9h246.9v69.6h.5c7.9-13.2 24.5-21.4 39.3-21.4 41.5 0 61.7 32.7 61.7 72.5 0 36.7-17.9 71.3-56.9 71.3zm68.7-70.4c0-41.1 21.7-73.3 65-73.3 30.6 0 56.6 15.8 59.4 49.3h-29c-2.3-16.6-14-25.6-30.1-25.6-15 0-36.2 8.2-36.2 49.6 0 22.7 9.7 46.7 34.9 46.7 16.8 0 28.5-11.6 31.4-31.1H635c-5.4 35.3-26.5 54.9-60.4 54.9-41.4-.1-64.1-30.4-64.1-70.5z"/><path d="M433.1 414.2c-23.4 0-37-20.6-37-48 0-29 12.5-48.3 37-48.3 24 0 36.4 23.5 36.5 48.3 0 23.7-10 48-36.5 48z"/></svg>
       </a>
-      <a href="https://open.spotify.com/artist/7n0isdj3K0MwurrqOzG4f8" target="_blank" aria-label="Spotify">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" style="enable-background:new 0 0 20 20" xml:space="preserve"><path d="M15.9 8.9C12.7 7 7.4 6.8 4.3 7.8c-.5.1-1-.1-1.2-.6-.1-.6.2-1.1.7-1.2 3.6-1.1 9.4-.8 13.1 1.4.4.2.6.8.4 1.3-.3.3-.9.4-1.4.2m-.1 2.8c-.2.4-.7.5-1 .2-2.7-1.6-6.8-2.1-9.9-1.1-.4.1-.9-.1-1-.5-.1-.4 0-.9.4-.9 3.7-1.1 8.1-.6 11.2 1.3.4.2.5.7.3 1m-1.2 2.8c-.2.3-.6.4-.9.2-2.4-1.4-5.3-1.8-8.8-.9-.3.1-.6-.1-.8-.4-.1-.4.2-.6.5-.8 3.8-.9 7.1-.5 9.7 1.1.4.1.5.4.3.8M10 0C4.5 0 0 4.5 0 10s4.5 10 10 10 10-4.5 10-10S15.5 0 10 0z"/></svg>
+      <a href="https://open.spotify.com/artist/7n0isdj3K0MwurrqOzG4f8" target="_blank" rel="noopener" aria-label="Spotify">
+        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M15.9 8.9C12.7 7 7.4 6.8 4.3 7.8c-.5.1-1-.1-1.2-.6-.1-.6.2-1.1.7-1.2 3.6-1.1 9.4-.8 13.1 1.4.4.2.6.8.4 1.3-.3.3-.9.4-1.4.2m-.1 2.8c-.2.4-.7.5-1 .2-2.7-1.6-6.8-2.1-9.9-1.1-.4.1-.9-.1-1-.5-.1-.4 0-.9.4-.9 3.7-1.1 8.1-.6 11.2 1.3.4.2.5.7.3 1m-1.2 2.8c-.2.3-.6.4-.9.2-2.4-1.4-5.3-1.8-8.8-.9-.3.1-.6-.1-.8-.4-.1-.4.2-.6.5-.8 3.8-.9 7.1-.5 9.7 1.1.4.1.5.4.3.8M10 0C4.5 0 0 4.5 0 10s4.5 10 10 10 10-4.5 10-10S15.5 0 10 0z"/></svg>
       </a>
-      <a href="https://www.instagram.com/batterthedrag/" target="_blank" aria-label="Instagram">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1146.6 1146.6" style="enable-background:new 0 0 1146.6 1146.6" xml:space="preserve"><path d="M788.3 358.3h-95.5v95.6h95.5zM573.3 671.3c52.6 0 97.9-43 97.9-97.9 0-21.5-7.2-40.6-19.1-57.3-16.7-23.9-47.8-40.6-78.8-40.6-31.1 0-62.1 16.7-78.8 40.6-11.9 16.7-19.1 35.8-19.1 57.3 0 54.9 45.4 97.9 97.9 97.9z"/><path d="M573.3 0C256.7 0 0 256.7 0 573.3s256.7 573.3 573.3 573.3 573.3-256.7 573.3-573.3S890 0 573.3 0zm279.5 745.3c0 59.7-47.8 107.5-107.5 107.5h-344c-59.7 0-107.5-47.8-107.5-107.5v-344c0-59.7 47.8-107.5 107.5-107.5h344c59.7 0 107.5 47.8 107.5 107.5v344z"/><path d="M714.3 516c7.2 16.7 11.9 38.2 11.9 57.3 0 83.6-69.3 152.9-152.9 152.9-83.6 0-152.9-69.3-152.9-152.9 0-19.1 4.8-40.6 11.9-57.3h-83.6v229.3c0 28.7 23.9 52.6 52.6 52.6h344c28.7 0 52.6-23.9 52.6-52.6V516h-83.6z"/></svg>
+      <a href="https://www.instagram.com/batterthedrag/" target="_blank" rel="noopener" aria-label="Instagram">
+        <svg viewBox="0 0 1146.6 1146.6" aria-hidden="true"><path d="M788.3 358.3h-95.5v95.6h95.5zM573.3 671.3c52.6 0 97.9-43 97.9-97.9 0-21.5-7.2-40.6-19.1-57.3-16.7-23.9-47.8-40.6-78.8-40.6-31.1 0-62.1 16.7-78.8 40.6-11.9 16.7-19.1 35.8-19.1 57.3 0 54.9 45.4 97.9 97.9 97.9z"/><path d="M573.3 0C256.7 0 0 256.7 0 573.3s256.7 573.3 573.3 573.3 573.3-256.7 573.3-573.3S890 0 573.3 0zm279.5 745.3c0 59.7-47.8 107.5-107.5 107.5h-344c-59.7 0-107.5-47.8-107.5-107.5v-344c0-59.7 47.8-107.5 107.5-107.5h344c59.7 0 107.5 47.8 107.5 107.5v344z"/><path d="M714.3 516c7.2 16.7 11.9 38.2 11.9 57.3 0 83.6-69.3 152.9-152.9 152.9-83.6 0-152.9-69.3-152.9-152.9 0-19.1 4.8-40.6 11.9-57.3h-83.6v229.3c0 28.7 23.9 52.6 52.6 52.6h344c28.7 0 52.6-23.9 52.6-52.6V516h-83.6z"/></svg>
       </a>
-      <a href="https://www.facebook.com/batterthedrag" target="_blank" aria-label="Facebook">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 19.9" style="enable-background:new 0 0 20 19.9" xml:space="preserve"><path d="M10 0C4.5 0 0 4.5 0 10c0 5 3.7 9.1 8.4 9.9v-7H5.9V10h2.5V7.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V10h2.8l-.4 2.9h-2.3v7c4.9-.8 8.5-5 8.4-9.9 0-5.5-4.5-10-10-10z"/></svg>
+      <a href="https://www.facebook.com/batterthedrag" target="_blank" rel="noopener" aria-label="Facebook">
+        <svg viewBox="0 0 20 19.9" aria-hidden="true"><path d="M10 0C4.5 0 0 4.5 0 10c0 5 3.7 9.1 8.4 9.9v-7H5.9V10h2.5V7.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V10h2.8l-.4 2.9h-2.3v7c4.9-.8 8.5-5 8.4-9.9 0-5.5-4.5-10-10-10z"/></svg>
       </a>
-    </div>
+    </nav>
   </div>
+
+  <a class="arrow" href="the-universe-is-ours.html" data-next>
+    <span class="sr-only">Next: </span>
+    <svg viewBox="0 0 50 100" aria-hidden="true"><path d="M2 2 48 50 2 98"/></svg>
+    <span class="label">The Universe Is Ours</span>
+  </a>
+
+  <div class="exit-light" aria-hidden="true"></div>
+
   <script>
-    const mobileConfig = {
-        sizeRange: [0.8, 2.3],
-        speedRange: [0.1, 0.4],
-        opacityRange: [0.1, 0.4],
-        particleCount: 100
-    };
+    (function () {
+      var root = document.documentElement;
+      var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var scene = document.querySelector('.scene');
+      var bg = document.querySelector('.bg');
 
-    const desktopConfig = {
-        sizeRange: [1, 3],
-        speedRange: [0.2, 0.6],
-        opacityRange: [0.1, 0.4],
-        particleCount: 200
-    };
+      // Tunnel photo is 2000x946; the lit opening is centered at (1125, 515) and ~250px wide.
+      var IMG = { w: 2000, h: 946, ox: 1125, oy: 515, os: 250 };
+      var opening = { x: 0, y: 0, size: 0 };
 
-    function onMount(callback) {
-        document.addEventListener('DOMContentLoaded', callback);
-    }
+      // Split title lines into letters for the staggered reveal.
+      document.querySelectorAll('.split').forEach(function (el) {
+        var text = el.textContent;
+        el.textContent = '';
+        Array.from(text).forEach(function (ch, i) {
+          var span = document.createElement('span');
+          span.textContent = ch;
+          span.setAttribute('aria-hidden', 'true');
+          span.style.setProperty('--i', i);
+          el.appendChild(span);
+        });
+      });
 
-    onMount(function () {
-        const isMobile = window.innerWidth <= 768;
-        const particleConfig = isMobile ? mobileConfig : desktopConfig;
+      // Size the photo like `cover`, but keep the tunnel opening a little right of center
+      // so the light, glow and dust all line up exactly.
+      function layout() {
+        var W = scene.clientWidth;
+        var H = scene.clientHeight;
+        var s = Math.max(W / IMG.w, H / IMG.h);
+        var w = IMG.w * s;
+        var h = IMG.h * s;
+        // On portrait screens, center between the walking figure (~x 940) and the opening.
+        var portrait = W < H;
+        var focusX = portrait ? 1070 : IMG.ox;
+        var targetX = W * (portrait ? 0.5 : 0.54);
+        var x = Math.min(0, Math.max(W - w, targetX - focusX * s));
+        var y = (H - h) / 2;
 
-        const canvas = document.getElementById('particlesCanvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+        bg.style.backgroundSize = w + 'px ' + h + 'px';
+        bg.style.backgroundPosition = x + 'px ' + y + 'px';
 
-        let particlesArray = [];
+        opening.x = x + IMG.ox * s;
+        opening.y = y + IMG.oy * s;
+        opening.size = IMG.os * s;
+        root.style.setProperty('--ox', opening.x + 'px');
+        root.style.setProperty('--oy', opening.y + 'px');
+        root.style.setProperty('--os', opening.size + 'px');
+        sizeCanvas();
+      }
 
-        function Particle(x, y, size, speed, directionAngle, finalOpacity) {
-            this.x = x;
-            this.y = y;
-            this.size = size;
-            this.speed = speed;
-            this.directionX = Math.cos(directionAngle) * speed;
-            this.directionY = Math.sin(directionAngle) * speed;
-            this.finalOpacity = finalOpacity;
-            this.opacity = 0;
+      // ---------- Dust in the light ----------
+      var canvas = document.getElementById('dust');
+      var ctx = canvas.getContext('2d');
+      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+      var motes = [];
 
-            this.update = function () {
-                this.x += this.directionX;
-                this.y += this.directionY;
-                this.fadeIn();
-            };
+      function sizeCanvas() {
+        canvas.width = scene.clientWidth * dpr;
+        canvas.height = scene.clientHeight * dpr;
+      }
 
-            this.fadeIn = function () {
-                if (this.opacity < this.finalOpacity) {
-                    this.opacity += 0.005;
-                }
-            };
+      function makeMote(fresh) {
+        var near = Math.random() < 0.12; // a few big, soft, out-of-focus motes close to the lens
+        var spread = opening.size * (near ? 3.2 : 1.9);
+        var angle = Math.random() * Math.PI * 2;
+        var r = Math.sqrt(Math.random()) * spread;
+        return {
+          x: opening.x + Math.cos(angle) * r,
+          y: opening.y + Math.sin(angle) * r * 0.75 + opening.size * 0.15,
+          r: near ? 2 + Math.random() * 4 : 0.4 + Math.random() * 1.3,
+          vx: (Math.random() - 0.5) * (near ? 0.25 : 0.15),
+          vy: (Math.random() - 0.6) * (near ? 0.2 : 0.12),
+          wobble: Math.random() * Math.PI * 2,
+          life: fresh ? Math.random() : 0,
+          speed: 0.0015 + Math.random() * 0.003,
+          near: near
+        };
+      }
 
-            this.draw = function () {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.closePath();
-                ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
-                ctx.fill();
-            };
+      function initDust() {
+        var count = window.innerWidth < 700 ? 70 : 140;
+        motes = [];
+        for (var i = 0; i < count; i++) motes.push(makeMote(true));
+      }
+
+      function drawDust() {
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.globalCompositeOperation = 'lighter';
+        for (var i = 0; i < motes.length; i++) {
+          var m = motes[i];
+          m.life += m.speed;
+          if (m.life >= 1) { motes[i] = makeMote(false); continue; }
+          m.wobble += 0.02;
+          m.x += m.vx + Math.sin(m.wobble) * 0.08;
+          m.y += m.vy + Math.cos(m.wobble * 0.7) * 0.05;
+
+          // Brighter the closer it floats to the opening; fades in and out over its life.
+          var d = Math.hypot(m.x - opening.x, m.y - opening.y) / (opening.size * 2.4);
+          var lit = Math.max(0, 1 - d);
+          var fade = Math.sin(m.life * Math.PI);
+          var a = lit * fade * (m.near ? 0.22 : 0.85);
+          if (a < 0.01) continue;
+
+          if (m.near) {
+            var g = ctx.createRadialGradient(m.x, m.y, 0, m.x, m.y, m.r * 3);
+            g.addColorStop(0, 'rgba(239, 235, 203,' + a + ')');
+            g.addColorStop(1, 'rgba(239, 235, 203, 0)');
+            ctx.fillStyle = g;
+            ctx.beginPath();
+            ctx.arc(m.x, m.y, m.r * 3, 0, Math.PI * 2);
+            ctx.fill();
+          } else {
+            ctx.fillStyle = 'rgba(250, 247, 220,' + a + ')';
+            ctx.beginPath();
+            ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2);
+            ctx.fill();
+          }
         }
+        requestAnimationFrame(drawDust);
+      }
 
-        function init() {
-            particlesArray = [];
-            for (let i = 0; i < particleConfig.particleCount; i++) {
-                let x = Math.random() * canvas.width;
-                let y = Math.random() * canvas.height;
-                let size = Math.random() * (particleConfig.sizeRange[1] - particleConfig.sizeRange[0]) + particleConfig.sizeRange[0];
-                let speed = Math.random() * (particleConfig.speedRange[1] - particleConfig.speedRange[0]) + particleConfig.speedRange[0];
-                let directionAngle = Math.floor(Math.random() * 360);
-                let opacity = Math.random() * (particleConfig.opacityRange[1] - particleConfig.opacityRange[0]) + particleConfig.opacityRange[0];
-                particlesArray.push(new Particle(x, y, size, speed, directionAngle, opacity));
-            }
+      // ---------- Mouse parallax ----------
+      var target = { x: 0, y: 0 };
+      var current = { x: 0, y: 0 };
+
+      function parallax() {
+        current.x += (target.x - current.x) * 0.05;
+        current.y += (target.y - current.y) * 0.05;
+        root.style.setProperty('--px', current.x.toFixed(2) + 'px');
+        root.style.setProperty('--py', current.y.toFixed(2) + 'px');
+        requestAnimationFrame(parallax);
+      }
+
+      window.addEventListener('pointermove', function (e) {
+        if (e.pointerType !== 'mouse') return;
+        target.x = (e.clientX / window.innerWidth - 0.5) * -22;
+        target.y = (e.clientY / window.innerHeight - 0.5) * -14;
+      });
+
+      // ---------- Next page: walk into the light ----------
+      var next = document.querySelector('[data-next]');
+      var leaving = false;
+
+      function goNext() {
+        if (leaving) return;
+        leaving = true;
+        if (reduceMotion) { location.href = next.href; return; }
+        try { sessionStorage.setItem('btd-arrive', 'light'); } catch (e) {}
+        document.body.classList.add('is-leaving');
+        setTimeout(function () { location.href = next.href; }, 1500);
+      }
+
+      next.addEventListener('click', function (e) {
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+        e.preventDefault();
+        goNext();
+      });
+
+      window.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowRight') goNext();
+      });
+
+      var touchX = null;
+      window.addEventListener('touchstart', function (e) { touchX = e.touches[0].clientX; }, { passive: true });
+      window.addEventListener('touchend', function (e) {
+        if (touchX === null) return;
+        if (touchX - e.changedTouches[0].clientX > 70) goNext();
+        touchX = null;
+      });
+
+      // Coming back with the browser's back button restores the page mid-transition; reset it.
+      window.addEventListener('pageshow', function (e) {
+        if (e.persisted) {
+          leaving = false;
+          document.body.classList.remove('is-leaving');
         }
+      });
 
-        init();
+      var resizeTimer;
+      window.addEventListener('resize', function () {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(function () { layout(); initDust(); }, 120);
+      });
 
-        function animate() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            for (let i = 0; i < particlesArray.length; i++) {
-                particlesArray[i].update();
-                particlesArray[i].draw();
-            }
-            requestAnimationFrame(animate);
-        }
-
-        // Get the query parameters from the current URL
-        const params = new URLSearchParams(window.location.search);
-
-        // If the 'p' parameter is '1', run the animate function
-        if (params.get('p') === '1') {
-            animate();
-        }
-    });
+      layout();
+      initDust();
+      if (!reduceMotion) {
+        requestAnimationFrame(drawDust);
+        requestAnimationFrame(parallax);
+      }
+    })();
   </script>
 </body>
 </html>
