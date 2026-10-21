@@ -168,11 +168,8 @@
       background-position: 120% 0;
       -webkit-background-clip: text;
       background-clip: text;
-      animation: sheen 11s 6s ease-in-out infinite;
       pointer-events: none;
     }
-
-    .title .album::after { animation-delay: 6.4s; }
 
     .info {
       position: fixed;
@@ -202,6 +199,16 @@
       letter-spacing: .04em;
       color: #a8a17f;
     }
+
+    .tracks button {
+      all: unset;
+      cursor: pointer;
+      transition: color .3s;
+    }
+
+    .tracks button:hover,
+    .tracks button[aria-current="true"] { color: var(--light); }
+    .tracks button:focus-visible { outline: 1px solid var(--light); outline-offset: 4px; }
 
     .tracks li span {
       font-size: 11px;
@@ -330,6 +337,179 @@
       filter: drop-shadow(0 0 14px rgba(239, 235, 203, .6));
     }
 
+    /* ---------- Player ---------- */
+
+    .player {
+      position: fixed;
+      right: var(--gutter);
+      bottom: calc(var(--gutter) + env(safe-area-inset-bottom));
+      z-index: 6;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      width: 270px;
+      padding: 9px 18px 9px 9px;
+      border: 1px solid rgba(122, 117, 89, .45);
+      background: rgba(0, 0, 0, .35);
+      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(10px);
+    }
+
+    .player-toggle {
+      flex: none;
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      border: 1px solid rgba(239, 235, 203, .55);
+      border-radius: 50%;
+      background: none;
+      color: var(--light);
+      cursor: pointer;
+      transition: background .4s, color .4s, box-shadow .4s;
+    }
+
+    .player-toggle svg { width: 15px; height: 15px; fill: currentColor; }
+    .player-toggle .i-pause,
+    .player.is-playing .player-toggle .i-play { display: none; }
+    .player.is-playing .player-toggle .i-pause { display: block; }
+
+    .player-toggle:hover,
+    .player-toggle:focus-visible {
+      background: var(--light);
+      color: #111;
+      box-shadow: 0 0 30px rgba(239, 235, 203, .35);
+    }
+
+    .player-meta {
+      flex: 1;
+      display: grid;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .player-title {
+      font-size: 14px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: #a8a17f;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .player-progress {
+      height: 1px;
+      background: rgba(122, 117, 89, .4);
+      overflow: hidden;
+    }
+
+    .player-progress span {
+      display: block;
+      height: 100%;
+      background: var(--light);
+      transform-origin: left;
+      transform: scaleX(var(--progress, 0));
+    }
+
+    /* Little light meter; only moves while playing */
+    .eq {
+      flex: none;
+      display: flex;
+      align-items: flex-end;
+      gap: 3px;
+      height: 16px;
+    }
+
+    .eq i {
+      width: 2px;
+      height: 20%;
+      background: var(--ink);
+      transition: background .4s;
+    }
+
+    .player.is-playing .eq i {
+      background: var(--light);
+      animation: eq .8s ease-in-out infinite alternate;
+    }
+
+    .player.is-playing .eq i:nth-child(2) { animation-duration: .55s; animation-delay: -.2s; }
+    .player.is-playing .eq i:nth-child(3) { animation-duration: .7s; animation-delay: -.5s; }
+    .player.is-playing .eq i:nth-child(4) { animation-duration: .9s; animation-delay: -.1s; }
+
+    /* ---------- Sound / no sound ---------- */
+
+    .gate {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: grid;
+      place-items: center;
+      padding: var(--gutter);
+      background: #000;
+      transition: opacity 1.2s ease, visibility 1.2s;
+    }
+
+    .gate[hidden] { display: none; }
+    .gate.is-closing { opacity: 0; visibility: hidden; pointer-events: none; }
+
+    .gate-inner {
+      display: grid;
+      justify-items: center;
+      gap: clamp(36px, 7vh, 64px);
+      text-align: center;
+    }
+
+    .gate-title {
+      font-family: 'Italiana', serif;
+      font-size: clamp(1.3rem, 3vw, 2.2rem);
+      letter-spacing: .24em;
+      text-transform: uppercase;
+      color: var(--ink);
+    }
+
+    .gate-choices {
+      display: flex;
+      gap: clamp(40px, 10vw, 120px);
+    }
+
+    .gate button {
+      display: grid;
+      justify-items: center;
+      gap: 16px;
+      padding: 12px;
+      border: 0;
+      background: none;
+      color: var(--ink);
+      font: 500 13px 'Jost', sans-serif;
+      letter-spacing: .42em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: color .4s;
+    }
+
+    .gate svg {
+      width: 64px;
+      height: 64px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: filter .4s, transform .6s var(--ease-out);
+    }
+
+    .gate button:hover,
+    .gate button:focus-visible { color: var(--light); }
+    .gate button:hover svg,
+    .gate button:focus-visible svg {
+      transform: scale(1.08);
+      filter: drop-shadow(0 0 12px rgba(239, 235, 203, .55));
+    }
+
+    .gate .wave { animation: wave 2.4s ease-in-out infinite; }
+    .gate .wave + .wave { animation-delay: .3s; }
+
     :focus-visible { outline: 1px solid var(--light); outline-offset: 4px; }
 
     .sr-only {
@@ -348,7 +528,11 @@
       .title .band { font-size: 9.4vw; }
       .title .album { font-size: 5.6vw; }
       /* The opening sits mid-screen on phones, so park the arrow bottom-right, clear of the light */
-      .arrow { top: auto; bottom: calc(var(--gutter) + env(safe-area-inset-bottom) - 16px); right: 4px; transform: none; }
+      .arrow { top: auto; bottom: calc(var(--gutter) + env(safe-area-inset-bottom) + 48px); right: 4px; transform: none; }
+      .info { bottom: calc(var(--gutter) + env(safe-area-inset-bottom) + 64px); }
+      .player { left: var(--gutter); right: var(--gutter); bottom: calc(14px + env(safe-area-inset-bottom)); width: auto; }
+      .gate svg { width: 52px; height: 52px; }
+      .gate button { font-size: 12px; letter-spacing: .3em; }
       .arrow svg { width: 34px; height: 68px; }
       .arrow .label { display: none; }
     }
@@ -425,34 +609,55 @@
       100% { transform: translate(0, 0); }
     }
 
+    @keyframes eq {
+      from { height: 15%; }
+      to   { height: 100%; }
+    }
+
+    @keyframes wave {
+      0%, 100% { opacity: 1; }
+      50% { opacity: .25; }
+    }
+
     @keyframes plunge {
       to { transform: scale(7); filter: brightness(2.2); }
     }
 
+    /* Hold everything in the dark until the visitor picks sound / no sound */
+    .js:not(.is-ready) :is(.scene, .title, .info, .arrow, .player) { visibility: hidden; }
+
     @media (prefers-reduced-motion: no-preference) {
-      .js .bg { animation: enter 5.5s .5s var(--ease-out) both, drift 40s 6s ease-in-out infinite alternate; }
-      .js .glow { animation: glow-in 3s .2s var(--ease-out) both, flicker 7s 3.2s linear infinite; }
-      .js .split > span { display: inline-block; white-space: pre; animation: letter 1.8s calc(1.6s + var(--i) * 70ms) var(--ease-out) both; }
-      .js .album.split > span { animation-delay: calc(2.9s + var(--i) * 55ms); }
-      .js .info > * { animation: rise 1.4s var(--ease-out) both; }
-      .js .info > :nth-child(1) { animation-delay: 3.6s; }
-      .js .info > :nth-child(2) { animation-delay: 3.8s; }
-      .js .info > :nth-child(3) { animation-delay: 4s; }
-      .js .info > :nth-child(4) { animation-delay: 4.2s; }
-      .js .arrow { animation: arrow-in 1.6s 4.4s var(--ease-out) both; }
-      .js #dust { animation: rise 4s 2.5s ease both; }
+      .is-ready .bg { animation: enter 5.5s .5s var(--ease-out) both, drift 40s 6s ease-in-out infinite alternate; }
+      .is-ready .glow { animation: glow-in 3s .2s var(--ease-out) both, flicker 7s 3.2s linear infinite; }
+      .is-ready .split > span { display: inline-block; white-space: pre; animation: letter 1.8s calc(1.6s + var(--i) * 70ms) var(--ease-out) both; }
+      .is-ready .album.split > span { animation-delay: calc(2.9s + var(--i) * 55ms); }
+      .is-ready .info > * { animation: rise 1.4s var(--ease-out) both; }
+      .is-ready .info > :nth-child(1) { animation-delay: 3.6s; }
+      .is-ready .info > :nth-child(2) { animation-delay: 3.8s; }
+      .is-ready .info > :nth-child(3) { animation-delay: 4s; }
+      .is-ready .info > :nth-child(4) { animation-delay: 4.2s; }
+      .is-ready .arrow { animation: arrow-in 1.6s 4.4s var(--ease-out) both; }
+      .is-ready .player { animation: rise 1.4s 4.6s var(--ease-out) both; }
+      .is-ready .title .band::after,
+      .is-ready .title .album::after { animation: sheen 11s 6s ease-in-out infinite; }
+      .is-ready .title .album::after { animation-delay: 6.4s; }
+      .gate:not([hidden]) .gate-inner { animation: rise 1.6s .3s var(--ease-out) both; }
+      .is-ready #dust { animation: rise 4s 2.5s ease both; }
 
       /* Walking into the light */
       .is-leaving .zoom { animation: plunge 1.6s cubic-bezier(.7, 0, .84, 0) forwards; }
       .is-leaving .exit-light { opacity: 1; transition: opacity .9s .65s ease-in; }
       .is-leaving .title,
       .is-leaving .info,
-      .is-leaving .arrow { opacity: 0; filter: blur(8px); transition: opacity .6s, filter .6s; }
-      .is-leaving .arrow { animation: none; }
+      .is-leaving .arrow,
+      .is-leaving .player { opacity: 0; filter: blur(8px); transition: opacity .6s, filter .6s; }
+      .is-leaving .arrow,
+      .is-leaving .player { animation: none; }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .grain { animation: none; }
+      .grain,
+      .gate .wave { animation: none; }
       .title .band::after,
       .title .album::after { display: none; }
       .bg { transform: scale(1.06); }
@@ -478,9 +683,9 @@
   <div class="info">
     <p class="eyebrow">The new LP</p>
     <ol class="tracks">
-      <li><span>I</span>Masmusa</li>
-      <li><span>II</span>Pangsaging</li>
-      <li><span>III</span>Banane</li>
+      <li><button type="button" data-track="0"><span>I</span>Masmusa</button></li>
+      <li><button type="button" data-track="1"><span>II</span>Pangsaging</button></li>
+      <li><button type="button" data-track="2"><span>III</span>Banane</button></li>
     </ol>
     <a class="listen" href="https://batterthedrag.bandcamp.com/album/the-wendt" target="_blank" rel="noopener">
       Listen on Bandcamp
@@ -508,7 +713,35 @@
     <span class="label">The Universe Is Ours</span>
   </a>
 
+  <div class="player" role="group" aria-label="Music player">
+    <button class="player-toggle" type="button" aria-label="Play">
+      <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12.5-7.5z"/></svg>
+      <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4.5h4v15H6zM14 4.5h4v15h-4z"/></svg>
+    </button>
+    <div class="player-meta">
+      <span class="player-title" aria-live="polite">Masmusa</span>
+      <span class="player-progress" aria-hidden="true"><span></span></span>
+    </div>
+    <span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+  </div>
+
   <div class="exit-light" aria-hidden="true"></div>
+
+  <div class="gate" hidden>
+    <div class="gate-inner">
+      <p class="gate-title">Batter The Drag</p>
+      <div class="gate-choices">
+        <button type="button" data-sound="on">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9.5h3.5L11 5.5v13l-4.5-4H3z"/><path class="wave" d="M14.5 9a4.2 4.2 0 0 1 0 6"/><path class="wave" d="M17 6.5a7.8 7.8 0 0 1 0 11"/></svg>
+          Sound
+        </button>
+        <button type="button" data-sound="off">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9.5h3.5L11 5.5v13l-4.5-4H3z"/><path d="M15 9.5l5 5M20 9.5l-5 5"/></svg>
+          No sound
+        </button>
+      </div>
+    </div>
+  </div>
 
   <script>
     (function () {
@@ -662,15 +895,148 @@
         }
       });
 
+      // ---------- Sound ----------
+      // The choice and the album position live in sessionStorage so the other page
+      // (and coming back here) can carry the music on.
+      function store(key, value) { try { sessionStorage.setItem(key, value); } catch (e) {} }
+      function recall(key) { try { return sessionStorage.getItem(key); } catch (e) { return null; } }
+
+      var TRACKS = [
+        { title: 'Masmusa', src: 'audio/masmusa.mp3' },
+        { title: 'Pangsaging', src: 'audio/pangsaging.mp3' },
+        { title: 'Banane', src: 'audio/banane.mp3' }
+      ];
+      var audio = new Audio();
+      audio.preload = 'none';
+      var player = document.querySelector('.player');
+      var toggle = player.querySelector('.player-toggle');
+      var playerTitle = player.querySelector('.player-title');
+      var trackButtons = document.querySelectorAll('[data-track]');
+      var trackIndex = 0;
+      var wantPlaying = false;
+      var fadeTimer;
+
+      // Volume ramp. iOS ignores audio.volume, so there it simply starts and stops.
+      function fadeTo(volume, ms, done) {
+        clearInterval(fadeTimer);
+        var from = audio.volume;
+        var start = performance.now();
+        fadeTimer = setInterval(function () {
+          var k = Math.min(1, (performance.now() - start) / ms);
+          audio.volume = from + (volume - from) * k;
+          if (k === 1) {
+            clearInterval(fadeTimer);
+            if (done) done();
+          }
+        }, 30);
+      }
+
+      function setPlaying(on) {
+        wantPlaying = on;
+        player.classList.toggle('is-playing', on);
+        toggle.setAttribute('aria-label', on ? 'Pause' : 'Play');
+      }
+
+      function loadTrack(i, time) {
+        trackIndex = i;
+        audio.src = TRACKS[i].src;
+        if (time) {
+          audio.addEventListener('loadedmetadata', function () { audio.currentTime = time; }, { once: true });
+        }
+        playerTitle.textContent = TRACKS[i].title;
+        player.style.setProperty('--progress', 0);
+        trackButtons.forEach(function (b) {
+          b.setAttribute('aria-current', String(Number(b.dataset.track) === i));
+        });
+      }
+
+      function play(fadeMs) {
+        if (!audio.src) loadTrack(trackIndex);
+        setPlaying(true);
+        audio.volume = 0;
+        // Blocked autoplay (e.g. Safari after a page change) leaves the player paused; one tap starts it.
+        audio.play().then(function () { fadeTo(1, fadeMs); }, function (err) {
+          if (err.name === 'NotAllowedError') setPlaying(false);
+        });
+      }
+
+      function pause() {
+        setPlaying(false);
+        fadeTo(0, 400, function () { audio.pause(); });
+      }
+
+      toggle.addEventListener('click', function () {
+        if (wantPlaying) {
+          pause();
+          store('btd-sound', 'off');
+        } else {
+          play(600);
+          store('btd-sound', 'on');
+        }
+      });
+
+      trackButtons.forEach(function (b) {
+        b.addEventListener('click', function () {
+          loadTrack(Number(b.dataset.track));
+          play(300);
+          store('btd-sound', 'on');
+        });
+      });
+
+      audio.addEventListener('ended', function () {
+        loadTrack((trackIndex + 1) % TRACKS.length);
+        play(10);
+      });
+
+      audio.addEventListener('timeupdate', function () {
+        if (!audio.duration) return;
+        player.style.setProperty('--progress', audio.currentTime / audio.duration);
+        store('btd-wendt', trackIndex + ':' + Math.floor(audio.currentTime));
+      });
+
+      // Media keys / OS controls can pause us behind our back; keep the button honest.
+      audio.addEventListener('pause', function () {
+        if (wantPlaying && audio.paused && !audio.ended) setPlaying(false);
+      });
+
+      // Pick up the album where it was left, if this visitor has been here this session.
+      var saved = (recall('btd-wendt') || '').split(':');
+      if (TRACKS[saved[0]]) loadTrack(Number(saved[0]), Number(saved[1]) || 0);
+      else loadTrack(0);
+
+      function ready() { root.classList.add('is-ready'); }
+
+      var gate = document.querySelector('.gate');
+      var soundPref = recall('btd-sound');
+      if (soundPref) {
+        ready();
+        if (soundPref === 'on') play(2500);
+      } else {
+        gate.hidden = false;
+        gate.querySelectorAll('[data-sound]').forEach(function (b) {
+          b.addEventListener('click', function () {
+            var on = b.dataset.sound === 'on';
+            store('btd-sound', on ? 'on' : 'off');
+            if (on) play(4000); // inside the click, so the browser allows sound
+            gate.classList.add('is-closing');
+            setTimeout(function () { gate.hidden = true; }, 1200);
+            ready();
+          });
+        });
+      }
+
       // ---------- Next page: walk into the light ----------
       var next = document.querySelector('[data-next]');
       var leaving = false;
 
       function goNext() {
-        if (leaving) return;
+        if (leaving || !root.classList.contains('is-ready')) return;
         leaving = true;
+        // The next page plays its own song if the music is on here.
+        store('btd-sound', wantPlaying ? 'on' : 'off');
         if (reduceMotion) { location.href = next.href; return; }
-        try { sessionStorage.setItem('btd-arrive', 'light'); } catch (e) {}
+        if (wantPlaying) fadeTo(0, 1400);
+        store('btd-arrive', 'light');
         // .scene bleeds past the viewport and moves with the parallax, so convert the opening to viewport coords.
         var rect = scene.getBoundingClientRect();
         root.style.setProperty('--ex', rect.left + opening.x + 'px');
@@ -706,6 +1072,8 @@
         if (e.persisted) {
           leaving = false;
           document.body.classList.remove('is-leaving');
+          if (recall('btd-sound') === 'on') play(2500);
+          else setPlaying(false);
         }
       });
 

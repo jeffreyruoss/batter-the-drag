@@ -245,10 +245,96 @@
       transform: translateX(-8px);
     }
 
+    /* Player: Human Adjacent */
+    .player {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 260px;
+      padding: 8px 16px 8px 8px;
+      border-radius: 32px;
+      background: rgba(10, 12, 20, 0.6);
+      border: 1px solid rgba(102, 147, 200, 0.35);
+      font-family: 'Arial', sans-serif;
+      animation: fadeIn 3s ease-in-out;
+    }
+
+    .player-toggle {
+      flex: none;
+      display: grid;
+      place-items: center;
+      width: 40px;
+      height: 40px;
+      border: 0;
+      border-radius: 50%;
+      background: #6693C8;
+      color: #0b0d14;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+    }
+
+    .player-toggle:hover {
+      background: #fff;
+      transform: scale(1.06);
+    }
+
+    .player-toggle svg {
+      width: 15px;
+      height: 15px;
+      fill: currentColor;
+    }
+
+    .player-toggle .i-pause,
+    .player.is-playing .player-toggle .i-play {
+      display: none;
+    }
+
+    .player.is-playing .player-toggle .i-pause {
+      display: block;
+    }
+
+    .player-meta {
+      flex: 1;
+      display: grid;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .player-title {
+      color: #c9d3e3;
+      font-size: 14px;
+    }
+
+    .player-progress {
+      height: 2px;
+      border-radius: 2px;
+      background: rgba(102, 147, 200, 0.25);
+      overflow: hidden;
+    }
+
+    .player-progress span {
+      display: block;
+      height: 100%;
+      background: #6693C8;
+      transform-origin: left;
+      transform: scaleX(var(--progress, 0));
+    }
+
     @media (max-width: 699px) {
+      .player {
+        left: 16px;
+        right: 16px;
+        bottom: calc(16px + env(safe-area-inset-bottom));
+        width: auto;
+      }
+
       .arrow {
         top: auto;
-        bottom: 16px;
+        bottom: calc(80px + env(safe-area-inset-bottom));
         left: 4px;
         transform: none;
       }
@@ -347,15 +433,97 @@
     <svg viewBox="0 0 50 100" aria-hidden="true"><path d="M48 2 2 50 48 98"/></svg>
     <span class="label" aria-hidden="true">The Wendt LP</span>
   </a>
+  <div class="player" role="group" aria-label="Music player">
+    <button class="player-toggle" type="button" aria-label="Play">
+      <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12.5-7.5z"/></svg>
+      <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4.5h4v15H6zM14 4.5h4v15h-4z"/></svg>
+    </button>
+    <div class="player-meta">
+      <span class="player-title">Human Adjacent</span>
+      <span class="player-progress" aria-hidden="true"><span></span></span>
+    </div>
+  </div>
   <script>
     (function () {
+      function store(key, value) { try { sessionStorage.setItem(key, value); } catch (e) {} }
+      function recall(key) { try { return sessionStorage.getItem(key); } catch (e) { return null; } }
+
+      // ---------- Sound: Human Adjacent on loop ----------
+      var audio = new Audio('audio/human-adjacent.mp3');
+      audio.preload = 'none';
+      audio.loop = true;
+      var player = document.querySelector('.player');
+      var toggle = player.querySelector('.player-toggle');
+      var wantPlaying = false;
+      var fadeTimer;
+
+      // Volume ramp. iOS ignores audio.volume, so there it simply starts and stops.
+      function fadeTo(volume, ms, done) {
+        clearInterval(fadeTimer);
+        var from = audio.volume;
+        var start = performance.now();
+        fadeTimer = setInterval(function () {
+          var k = Math.min(1, (performance.now() - start) / ms);
+          audio.volume = from + (volume - from) * k;
+          if (k === 1) {
+            clearInterval(fadeTimer);
+            if (done) done();
+          }
+        }, 30);
+      }
+
+      function setPlaying(on) {
+        wantPlaying = on;
+        player.classList.toggle('is-playing', on);
+        toggle.setAttribute('aria-label', on ? 'Pause' : 'Play');
+      }
+
+      function play(fadeMs) {
+        setPlaying(true);
+        audio.volume = 0;
+        // Blocked autoplay (e.g. Safari after a page change) leaves the player paused; one tap starts it.
+        audio.play().then(function () { fadeTo(1, fadeMs); }, function (err) {
+          if (err.name === 'NotAllowedError') setPlaying(false);
+        });
+      }
+
+      function pause() {
+        setPlaying(false);
+        fadeTo(0, 400, function () { audio.pause(); });
+      }
+
+      toggle.addEventListener('click', function () {
+        if (wantPlaying) {
+          pause();
+          store('btd-sound', 'off');
+        } else {
+          play(600);
+          store('btd-sound', 'on');
+        }
+      });
+
+      audio.addEventListener('timeupdate', function () {
+        if (audio.duration) player.style.setProperty('--progress', audio.currentTime / audio.duration);
+      });
+
+      // Media keys / OS controls can pause us behind our back; keep the button honest.
+      audio.addEventListener('pause', function () {
+        if (wantPlaying && audio.paused) setPlaying(false);
+      });
+
+      // Music was on over on the Wendt page: fade the song in as the light fades out.
+      if (recall('btd-sound') === 'on') play(3000);
+
+      // ---------- Back to the new album ----------
       var prev = document.querySelector('[data-prev]');
       var leaving = false;
 
       function goPrev() {
         if (leaving) return;
         leaving = true;
+        store('btd-sound', wantPlaying ? 'on' : 'off');
         if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { location.href = prev.href; return; }
+        if (wantPlaying) fadeTo(0, 550);
         document.body.classList.add('is-leaving');
         setTimeout(function () { location.href = prev.href; }, 600);
       }
@@ -387,6 +555,8 @@
         if (e.persisted) {
           leaving = false;
           document.body.classList.remove('is-leaving');
+          if (recall('btd-sound') === 'on') play(2000);
+          else setPlaying(false);
         }
       });
     })();
