@@ -9,6 +9,7 @@
   //   leave(link, dir): play this page's exit ('prev' | 'next'); return ms to wait before going
   //   canLeave(): optional; return false to ignore navigation (e.g. before the intro starts)
   //   restore(): optional; the back/forward cache brought the page back mid-exit, so undo it
+  // Returns { hint() }: call it once the page's intro has started (its arrow animations are applied).
   BTD.nav = function (opts) {
     var leaving = false;
     var timer;
@@ -17,6 +18,7 @@
     function go(link, dir) {
       if (!link || leaving || (opts.canLeave && !opts.canLeave())) return;
       leaving = true;
+      if (dir === 'next') BTD.store('btd-used-next', '1');
       if (reduceMotion) { location.href = link.href; return; }
       var ms = opts.leave(link, dir);
       timer = setTimeout(function () { location.href = link.href; }, ms);
@@ -55,12 +57,85 @@
       else go(opts.next, 'next');
     });
 
+    // ---------- Hint: a streak shoots across the screen into the next arrow ----------
+    // So nobody misses it. Skipped once the visitor has used, hovered or focused a next arrow.
+    var HINT_GAP = 15000; // play once more if they're still here this long after
+    var hintTimer;
+
+    function engaged() { BTD.store('btd-used-next', '1'); }
+    if (opts.next) {
+      opts.next.addEventListener('pointerenter', engaged);
+      opts.next.addEventListener('focus', engaged);
+    }
+
+    function streak(again) {
+      var next = opts.next;
+      if (leaving || BTD.recall('btd-used-next')) return;
+      // Don't waste it on a background tab; play it when they come back.
+      if (document.hidden) {
+        document.addEventListener('visibilitychange', function () { streak(again); }, { once: true });
+        return;
+      }
+      var svg = next.querySelector('svg');
+      var r = svg.getBoundingClientRect();
+      if (!r.width || getComputedStyle(next).visibility === 'hidden') return;
+      if (again) hintTimer = setTimeout(function () { streak(false); }, HINT_GAP);
+      // A page can set --streak on the arrow for a brighter color than the arrow itself
+      var style = getComputedStyle(next);
+      var color = style.getPropertyValue('--streak').trim() || style.color;
+      var dist = r.left + r.width * 0.3;
+      var len = Math.min(dist, window.innerWidth * 0.45);
+
+      var line = document.createElement('div');
+      line.className = 'arrow-streak';
+      line.setAttribute('aria-hidden', 'true');
+      line.style.color = color;
+      line.style.top = r.top + r.height / 2 + 'px';
+      line.style.left = dist - len + 'px';
+      line.style.width = len + 'px';
+      document.body.appendChild(line);
+
+      line.animate([
+        { transform: 'translateX(' + -dist + 'px)', opacity: 1 },
+        { transform: 'translateX(0)', opacity: 1, offset: 0.75 },
+        { transform: 'translateX(0) scaleX(0)', opacity: 0 }
+      ], { duration: 1100, easing: 'cubic-bezier(.55, 0, .8, .4)' }).onfinish = function () { line.remove(); };
+
+      // The arrow takes the hit: a bump toward the next page and a glow, twice. Added on top of
+      // whatever the arrow is already doing (its nudge), so nothing snaps.
+      var glow = 'drop-shadow(0 0 14px ' + color + ')';
+      var calm = 'drop-shadow(0 0 0 ' + color + ')';
+      svg.animate([
+        { transform: 'translateX(0) scale(1)', filter: calm },
+        { transform: 'translateX(12px) scale(1.2)', filter: glow, offset: 0.2 },
+        { transform: 'translateX(0) scale(1)', filter: calm, offset: 0.45 },
+        { transform: 'translateX(8px) scale(1.1)', filter: glow, offset: 0.65 },
+        { transform: 'translateX(0) scale(1)', filter: calm }
+      ], { duration: 1300, delay: 800, easing: 'ease-in-out', composite: 'add' });
+    }
+
+    // Waits for the arrow's own entrance animations, then gives the visitor a moment to look around.
+    var hinted = false;
+    function hint() {
+      if (hinted || !opts.next || reduceMotion) return;
+      hinted = true;
+      var entrance = opts.next.getAnimations().filter(function (a) {
+        return a.effect.getTiming().iterations !== Infinity;
+      });
+      Promise.all(entrance.map(function (a) { return a.finished; })).then(function () {
+        hintTimer = setTimeout(function () { streak(true); }, 1500);
+      }, function () {}); // cancelled: the page is leaving
+    }
+
     window.addEventListener('pageshow', function (e) {
       if (!e.persisted) return;
       // Came back mid-exit: don't let the pending navigation fire later.
       clearTimeout(timer);
+      clearTimeout(hintTimer);
       leaving = false;
       if (opts.restore) opts.restore();
     });
+
+    return { hint: hint };
   };
 })();

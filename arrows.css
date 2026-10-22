@@ -46,6 +46,32 @@
   .arrow .label { display: none; }
 }
 
+/* The hint streak nav.js shoots into the next arrow; color from the arrow's --streak, else the arrow's color */
+.arrow-streak {
+  position: fixed;
+  z-index: 30;
+  height: 3px;
+  margin-top: -1.5px;
+  pointer-events: none;
+  border-radius: 2px;
+  background: linear-gradient(to right, transparent, currentColor);
+  filter: drop-shadow(0 0 8px currentColor);
+  transform-origin: right;
+}
+
+/* Bright head */
+.arrow-streak::after {
+  content: '';
+  position: absolute;
+  top: -4px;
+  right: -5px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 12px 4px currentColor;
+}
+
 /* Phones: up in the top corners */
 @media (max-width: 699px) {
   .arrow {

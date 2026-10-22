@@ -297,6 +297,7 @@
     /* ---------- Big next arrow (placed by arrows.css) ---------- */
 
     .arrow {
+      --streak: var(--light);
       z-index: 6;
       color: var(--ink);
       filter: drop-shadow(0 0 8px rgba(0, 0, 0, .9));
@@ -890,7 +891,31 @@
         resumeKey: 'btd-wendt'
       });
 
-      function ready() { root.classList.add('is-ready'); }
+      // ---------- Next page: walk into the light ----------
+      var nav = BTD.nav({
+        next: document.querySelector('[data-next]'),
+        canLeave: function () { return root.classList.contains('is-ready'); },
+        leave: function () {
+          music.leave(1400);
+          store('btd-arrive', 'light');
+          // .scene bleeds past the viewport and moves with the parallax, so convert the opening to viewport coords.
+          var rect = scene.getBoundingClientRect();
+          root.style.setProperty('--ex', rect.left + opening.x + 'px');
+          root.style.setProperty('--ey', rect.top + opening.y + 'px');
+          document.body.classList.add('is-leaving');
+          return 1500;
+        },
+        // Coming back with the browser's back button restores the page mid-transition; reset it.
+        restore: function () {
+          document.body.classList.remove('is-leaving');
+          music.restore(2500);
+        }
+      });
+
+      function ready() {
+        root.classList.add('is-ready');
+        nav.hint();
+      }
 
       var gate = document.querySelector('.gate');
       var soundPref = recall('btd-sound');
@@ -911,26 +936,6 @@
         });
       }
 
-      // ---------- Next page: walk into the light ----------
-      BTD.nav({
-        next: document.querySelector('[data-next]'),
-        canLeave: function () { return root.classList.contains('is-ready'); },
-        leave: function () {
-          music.leave(1400);
-          store('btd-arrive', 'light');
-          // .scene bleeds past the viewport and moves with the parallax, so convert the opening to viewport coords.
-          var rect = scene.getBoundingClientRect();
-          root.style.setProperty('--ex', rect.left + opening.x + 'px');
-          root.style.setProperty('--ey', rect.top + opening.y + 'px');
-          document.body.classList.add('is-leaving');
-          return 1500;
-        },
-        // Coming back with the browser's back button restores the page mid-transition; reset it.
-        restore: function () {
-          document.body.classList.remove('is-leaving');
-          music.restore(2500);
-        }
-      });
 
       // Mobile browsers fire resize when the URL bar shows/hides; only respawn the dust when the width changes.
       var resizeTimer;

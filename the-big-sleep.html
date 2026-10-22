@@ -1287,6 +1287,7 @@
       function ready() {
         if (root.classList.contains('is-ready')) return;
         root.classList.add('is-ready');
+        nav.hint();
         var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         setTimeout(critters.start, reduce ? 300 : 5200);
       }
@@ -1317,7 +1318,7 @@
       if (BTD.recall('btd-sound') === 'on') music.play(3000);
 
       // ---------- Prev / next: doze off ----------
-      BTD.nav({
+      var nav = BTD.nav({
         prev: document.querySelector('[data-prev]'),
         next: document.querySelector('[data-next]'),
         leave: function () {

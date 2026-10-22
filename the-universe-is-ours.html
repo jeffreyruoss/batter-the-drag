@@ -241,6 +241,7 @@
     }
     /* Big prev/next arrows (placed by arrows.css) */
     .arrow {
+      --streak: #a9c8ee;
       z-index: 2;
       color: #6693C8;
       font-family: 'Arial', sans-serif;
@@ -531,7 +532,7 @@
       // Music was on on the page before: fade Human Adjacent in with the page.
       if (BTD.recall('btd-sound') === 'on') music.play(3000);
 
-      BTD.nav({
+      var nav = BTD.nav({
         prev: document.querySelector('[data-prev]'),
         next: document.querySelector('[data-next]'),
         leave: function () {
@@ -545,6 +546,7 @@
           music.restore(2000);
         }
       });
+      nav.hint();
     })();
   </script>
   <script>

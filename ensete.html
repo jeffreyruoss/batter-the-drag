@@ -321,6 +321,7 @@
     /* ---------- Big prev / next arrows (placed by arrows.css) ---------- */
 
     .arrow {
+      --streak: #ffea99;
       z-index: 8;
       color: var(--flame-dim);
       filter: drop-shadow(0 0 8px rgba(0, 0, 0, .9));
@@ -1026,13 +1027,14 @@
         root.classList.add('is-lit');
         ignite();
         start();
+        nav.hint();
       }
 
       photo.decode().then(light, light);
       setTimeout(light, 4000); // don't wait forever on a slow connection
 
       // ---------- Prev / next: burn down to black ----------
-      BTD.nav({
+      var nav = BTD.nav({
         prev: document.querySelector('[data-prev]'),
         next: document.querySelector('[data-next]'),
         canLeave: function () { return root.classList.contains('is-lit'); },
