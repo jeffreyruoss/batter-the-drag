@@ -8,7 +8,7 @@
   <meta property="og:title" content="Batter The Drag · The Big Sleep">
   <meta property="og:description" content="The Big Sleep, as told by Batter The Drag. Listen on Bandcamp.">
   <meta property="og:image" content="https://batterthedrag.com/the-big-sleep/cover.jpg">
-  <meta property="og:url" content="https://batterthedrag.com/the-big-sleep.html">
+  <meta property="og:url" content="https://batterthedrag.com/the-big-sleep">
   <meta property="og:type" content="music.album">
   <meta name="theme-color" content="#e6e5de">
   <link rel="icon" type="image/png" href="favicon.png">
@@ -19,6 +19,7 @@
   <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
   <script>document.documentElement.classList.replace('no-js', 'js');</script>
   <script>try { var a = sessionStorage.getItem('btd-arrive'); if (a) { sessionStorage.removeItem('btd-arrive'); document.documentElement.dataset.arrive = a; } } catch (e) {}</script>
+  <link rel="stylesheet" href="arrows.css">
   <style>
     :root {
       --paper: #e6e5de;        /* the painting's paper, sampled */
@@ -29,9 +30,6 @@
       --ink-faint: #8a8070;
       --ease-out: cubic-bezier(.16, 1, .3, 1);
       --gutter: clamp(20px, 5vw, 72px);
-      /* Arrow columns, so the songs and the painting never sit under an arrow */
-      --arrow-x: clamp(8px, 3vw, 56px);
-      --arrow-w: clamp(38px, 5vw, 70px);
     }
 
     /* Eyelids: animated as one custom property so they can open and close */
@@ -214,6 +212,17 @@
       opacity: .8;
     }
 
+    /* ---------- Birds and butterflies, painted on a canvas over the painting ---------- */
+
+    .critters {
+      position: fixed;
+      inset: 0;
+      z-index: 3;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
     /* ---------- Songs, Bandcamp, socials ---------- */
 
     .info {
@@ -331,49 +340,24 @@
     .social a:hover svg,
     .social a:focus-visible svg { fill: var(--red); }
 
-    /* ---------- Big prev/next arrows ---------- */
+    /* ---------- Big prev/next arrows (placed by arrows.css) ---------- */
 
     .arrow {
-      position: fixed;
-      top: 50%;
-      left: var(--arrow-x);
       z-index: 6;
-      display: grid;
-      justify-items: center;
-      gap: 14px;
-      padding: 16px;
-      transform: translateY(-50%);
       color: var(--red);
-      text-decoration: none;
       transition: color .4s;
     }
 
-    .arrow[data-next] {
-      left: auto;
-      right: var(--arrow-x);
-    }
-
     .arrow svg {
-      width: var(--arrow-w);
-      height: calc(var(--arrow-w) * 2);
-      stroke: currentColor;
       stroke-width: 1;
-      fill: none;
-      overflow: visible;
       transition: transform .4s var(--ease-out);
     }
 
     .arrow .label {
-      font-size: 11px;
       font-weight: 500;
-      letter-spacing: .3em;
-      text-transform: uppercase;
-      writing-mode: vertical-rl;
       color: var(--ink-soft);
       transition: color .4s;
     }
-
-    .arrow[data-prev] .label { transform: rotate(180deg); }
 
     .arrow:hover,
     .arrow:focus-visible { color: var(--ink); }
@@ -519,26 +503,22 @@
     }
 
     @media (max-width: 699px) {
-      .stage { top: calc(env(safe-area-inset-top) + 66px); }
+      /* Below the arrows in the top corners */
+      .stage { top: calc(env(safe-area-inset-top) + 96px); }
       .info { bottom: calc(env(safe-area-inset-bottom) + 86px); gap: 14px; }
       .eyebrow { font-size: 12px; letter-spacing: .28em; }
       .tracks { font-size: 15px; gap: 2px 12px; }
       .listen { padding: 12px 18px; font-size: 12px; letter-spacing: .24em; }
       .social svg { width: 24px; height: 24px; }
       .player { left: var(--gutter); right: var(--gutter); bottom: calc(14px + env(safe-area-inset-bottom)); width: auto; }
-      /* Arrows up in the top corners, above the painting */
-      .arrow { top: calc(env(safe-area-inset-top) + 4px); transform: none; padding: 10px; }
-      .arrow[data-prev] { left: 4px; }
-      .arrow[data-next] { right: 4px; }
-      .arrow svg { width: 24px; height: 48px; }
-      .arrow .label { display: none; }
     }
 
     @media (min-width: 700px) and (max-width: 999px), (min-width: 700px) and (max-aspect-ratio: 1499/1000) {
-      .arrow { top: calc(env(safe-area-inset-top) + 8px); transform: none; }
-      .arrow svg { width: 30px; height: 60px; }
-      .arrow .label { display: none; }
-      .stage { top: calc(env(safe-area-inset-top) + 92px); }
+      /* Narrow enough to stay clear of the arrows on either side (--arrow-x and --arrow-w come from arrows.css) */
+      .stage {
+        --size: min(64vh, calc(100vw - (var(--arrow-x) + var(--arrow-w) + 32px) * 2));
+        top: calc(env(safe-area-inset-top) + 40px);
+      }
     }
 
     /* Wide screens: songs in their own column, the painting standing on the bottom edge.
@@ -680,6 +660,7 @@
       .is-leaving .info,
       .is-leaving .arrow,
       .is-leaving .player { opacity: 0; transition: opacity .6s; animation: none; }
+      .is-leaving .critters { opacity: 0; transition: opacity .8s .35s; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -703,6 +684,8 @@
       <span class="t-band split" aria-hidden="true">Batter The Drag</span>
     </h1>
   </div>
+
+  <canvas class="critters" aria-hidden="true"></canvas>
 
   <div class="grain" aria-hidden="true"></div>
 
@@ -740,12 +723,12 @@
     </nav>
   </div>
 
-  <a class="arrow" href="the-universe-is-ours.html" data-prev>
+  <a class="arrow" href="the-universe-is-ours" data-prev>
     <span class="sr-only">Previous: The Universe Is Ours</span>
     <svg viewBox="0 0 50 100" aria-hidden="true"><path d="M48 2 2 50 48 98"/></svg>
     <span class="label" aria-hidden="true">The Universe Is Ours</span>
   </a>
-  <a class="arrow" href="unfathomable-depths.html" data-next>
+  <a class="arrow" href="unfathomable-depths" data-next>
     <span class="sr-only">Next: Unfathomable Depths</span>
     <svg viewBox="0 0 50 100" aria-hidden="true"><path d="M2 2 48 50 2 98"/></svg>
     <span class="label" aria-hidden="true">Unfathomable Depths</span>
@@ -785,8 +768,528 @@
         if (stitch) el.appendChild(stitch);
       });
 
+      // ---------- Birds and butterflies ----------
+      // Distant brush-stroke birds drift across the open paper, behind the sleeper.
+      // Small watercolor butterflies wander in front and now and then rest on an ear,
+      // the needle or the thread.
+      var critters = (function () {
+        var canvas = document.querySelector('.critters');
+        var ctx = canvas.getContext('2d');
+        var stageEl = document.querySelector('.stage');
+        var titleEl = document.querySelector('.title');
+        var avoidEls = ['.info', '.player', '[data-prev]', '[data-next]'].map(function (q) { return document.querySelector(q); });
+        var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        var dpr = Math.min(window.devicePixelRatio || 1, 2);
+        var W = 0, H = 0, stage, title, avoid = [];
+        var birds = [], flies = [];
+        var raf = null, last = 0, now = 0, nextBird = 0, started = false;
+
+        // The sleeper on its own, so birds can pass behind it.
+        var sleeper = new Image();
+        sleeper.src = 'the-big-sleep/breath-mask.png';
+
+        var INK = '43, 36, 26';
+        var PALETTES = [
+          { fill: '184, 137, 42', edge: '112, 76, 18' },   // the sleeper's ochre
+          { fill: '163, 40, 52', edge: '106, 10, 22' },    // the title's red
+          { fill: '118, 134, 168', edge: '66, 78, 110' }   // the cool blue-grey in the paper
+        ];
+
+        // Places to rest, as fractions of the painting (it's square). a = body tilt.
+        var SPOTS = [
+          { fx: .14, fy: .093, a: -.2 },   // left ear tip
+          { fx: .31, fy: .275, a: .15 },   // top of the head
+          { fx: .829, fy: .296, a: .4 },   // the needle's point
+          { fx: .862, fy: .41, a: -.45 },  // along the needle
+          { fx: .926, fy: .85, a: .3 }     // the red thread
+        ];
+
+        function rand(a, b) { return a + Math.random() * (b - a); }
+
+        function box(el, pad) {
+          var r = el.getBoundingClientRect();
+          return { x: r.left - pad, y: r.top - pad, r: r.right + pad, b: r.bottom + pad, w: r.width };
+        }
+
+        function inside(x, y, r) { return x > r.x && x < r.r && y > r.y && y < r.b; }
+
+        function blocked(x, y) {
+          if (inside(x, y, title)) return true;
+          for (var i = 0; i < avoid.length; i++) if (inside(x, y, avoid[i])) return true;
+          return false;
+        }
+
+        function measure() {
+          W = window.innerWidth;
+          H = window.innerHeight;
+          canvas.width = W * dpr;
+          canvas.height = H * dpr;
+          var r = stageEl.getBoundingClientRect();
+          stage = { x: r.left, y: r.top, s: r.width };
+          title = box(titleEl, 14);
+          avoid = avoidEls.filter(function (el) {
+            return el && getComputedStyle(el).display !== 'none';
+          }).map(function (el) { return box(el, 22); });
+        }
+
+        // ----- Butterflies -----
+
+        // Paint one wing (the right one; the left is its mirror) once, in layered washes.
+        function wingSprite(pal, R) {
+          var c = document.createElement('canvas');
+          c.width = Math.ceil(1.1 * R * dpr);
+          c.height = Math.ceil(1.65 * R * dpr);
+          var g = c.getContext('2d');
+          g.scale(R * dpr, R * dpr);
+          g.translate(.05, .9);
+
+          function fore(j) {
+            function o() { return (Math.random() - .5) * 2 * j; }
+            g.beginPath();
+            g.moveTo(.02, -.18);
+            g.bezierCurveTo(.25 + o(), -.55 + o(), .62 + o(), -.86 + o(), .96 + o(), -.74 + o());
+            g.bezierCurveTo(1.02 + o(), -.5 + o(), .86 + o(), -.2 + o(), .62 + o(), -.06 + o());
+            g.bezierCurveTo(.4 + o(), 0, .18, 0, .02, .02);
+            g.closePath();
+          }
+
+          function hind(j) {
+            function o() { return (Math.random() - .5) * 2 * j; }
+            g.beginPath();
+            g.moveTo(.02, 0);
+            g.bezierCurveTo(.3 + o(), -.04 + o(), .66 + o(), .06 + o(), .7 + o(), .3 + o());
+            g.bezierCurveTo(.72 + o(), .52 + o(), .48 + o(), .66 + o(), .28 + o(), .62 + o());
+            g.bezierCurveTo(.12 + o(), .58 + o(), .04, .4, .02, .2);
+            g.closePath();
+          }
+
+          [hind, fore].forEach(function (shape) {
+            // Overlapping washes: soft, uneven edges and a deeper middle.
+            for (var k = 0; k < 4; k++) {
+              shape(.035);
+              g.fillStyle = 'rgba(' + pal.fill + ', .22)';
+              g.fill();
+            }
+            // Pigment pools at the edge as it dries.
+            shape(0);
+            g.lineWidth = .035;
+            g.strokeStyle = 'rgba(' + pal.edge + ', .42)';
+            g.stroke();
+            g.save();
+            g.clip();
+            var near = g.createRadialGradient(0, 0, 0, 0, 0, .55);
+            near.addColorStop(0, 'rgba(' + pal.edge + ', .35)');
+            near.addColorStop(1, 'rgba(' + pal.edge + ', 0)');
+            g.fillStyle = near;
+            g.fillRect(-.1, -1, 1.2, 1.8);
+            if (shape === fore) {
+              var tip = g.createRadialGradient(.86, -.66, 0, .86, -.66, .32);
+              tip.addColorStop(0, 'rgba(' + pal.edge + ', .45)');
+              tip.addColorStop(1, 'rgba(' + pal.edge + ', 0)');
+              g.fillStyle = tip;
+              g.fillRect(.4, -1, .8, .8);
+              // Two spots lifted back out to the paper
+              g.fillStyle = 'rgba(236, 234, 226, .6)';
+              g.beginPath();
+              g.arc(.78, -.62, .055, 0, Math.PI * 2);
+              g.arc(.66, -.5, .04, 0, Math.PI * 2);
+              g.fill();
+            }
+            g.restore();
+          });
+          return c;
+        }
+
+        function wingSize() { return Math.max(10, Math.min(24, stage.s * .03)); }
+
+        function makeFly(i) {
+          var pal = PALETTES[i % PALETTES.length];
+          var f = {
+            pal: pal,
+            k: rand(.85, 1.15),
+            x: 0, y: 0, vx: 0, vy: 0,
+            angle: 0,
+            phase: rand(0, 6),
+            open: 1,
+            state: 'wait',
+            wakeAt: 0,
+            glideUntil: 0,
+            seed: rand(0, 100)
+          };
+          paintFly(f);
+          return f;
+        }
+
+        function paintFly(f) {
+          f.R = wingSize() * f.k;
+          f.sprite = wingSprite(f.pal, f.R);
+        }
+
+        function freePoint() {
+          for (var i = 0; i < 30; i++) {
+            var x = rand(50, W - 50);
+            var y = rand(H * .06, H * .78);
+            if (!blocked(x, y)) return { x: x, y: y };
+          }
+          return { x: W / 2, y: H * .25 };
+        }
+
+        function spotPoint(s, f) {
+          return {
+            x: stage.x + s.fx * stage.s,
+            y: stage.y + s.fy * stage.s - f.R * .3
+          };
+        }
+
+        function freeSpot(f) {
+          var options = SPOTS.filter(function (s) {
+            if (flies.some(function (o) { return o !== f && o.spot === s; })) return false;
+            var p = spotPoint(s, f);
+            return p.x > 14 && p.x < W - 14 && p.y > 14 && p.y < H - 14 && !blocked(p.x, p.y);
+          });
+          return options.length ? options[Math.floor(Math.random() * options.length)] : null;
+        }
+
+        function enter(f, delay) {
+          var fromLeft = Math.random() < .5;
+          f.x = fromLeft ? -30 : W + 30;
+          f.y = rand(H * .1, H * .5);
+          f.vx = fromLeft ? 40 : -40;
+          f.vy = 0;
+          f.angle = fromLeft ? Math.PI / 2 : -Math.PI / 2;
+          f.spot = null;
+          f.state = 'wait';
+          f.wakeAt = now + delay;
+          f.target = freePoint();
+        }
+
+        function turnTo(f, a, k) {
+          var d = a - f.angle;
+          while (d > Math.PI) d -= Math.PI * 2;
+          while (d < -Math.PI) d += Math.PI * 2;
+          f.angle += d * k;
+        }
+
+        function updateFly(f, dt) {
+          if (f.state === 'wait') {
+            if (now < f.wakeAt) return;
+            f.state = 'fly';
+          }
+
+          if (f.state === 'rest') {
+            var p = spotPoint(f.spot, f);
+            f.x = p.x;
+            f.y = p.y;
+            turnTo(f, f.spot.a, Math.min(1, dt * 3));
+            // Slowly opening and closing, the way they bask
+            f.phase += dt * 1.4;
+            f.open = .2 + .8 * (.5 + .5 * Math.sin(f.phase));
+            if (now > f.restUntil) {
+              f.state = 'fly';
+              f.spot = null;
+              f.target = freePoint();
+              f.vy = -60;
+            }
+            return;
+          }
+
+          var tx = f.target.x, ty = f.target.y;
+          if (f.state === 'land') {
+            var sp = spotPoint(f.spot, f);
+            tx = sp.x;
+            ty = sp.y;
+          }
+          var dx = tx - f.x, dy = ty - f.y;
+          var dist = Math.hypot(dx, dy) || 1;
+
+          // Meander: wobble the heading around the way to the target
+          var wobble = Math.sin(now * 1.7 + f.seed) * .9 + Math.sin(now * .6 + f.seed * 2) * .5;
+          var heading = Math.atan2(dy, dx) + (f.state === 'land' ? wobble * Math.min(1, dist / 160) : wobble);
+          var speed = f.state === 'leave' ? 260 : f.state === 'land' ? Math.min(55, 12 + dist * .9) : 55;
+          speed *= f.R / 18;
+          var steer = Math.min(1, dt * (f.state === 'leave' ? 4 : 2.2));
+          f.vx += (Math.cos(heading) * speed - f.vx) * steer;
+          f.vy += (Math.sin(heading) * speed - f.vy) * steer;
+          f.x += f.vx * dt;
+          f.y += f.vy * dt;
+          turnTo(f, Math.atan2(f.vx, -f.vy), Math.min(1, dt * 6));
+
+          // Wingbeats, with the odd short glide
+          if (now > f.glideUntil) {
+            f.phase += dt * 15;
+            f.open = .5 + .5 * Math.cos(f.phase);
+            if (f.state === 'fly' && Math.random() < dt * .35) f.glideUntil = now + rand(.25, .7);
+          } else {
+            f.open += (.95 - f.open) * Math.min(1, dt * 8);
+          }
+
+          if (f.state === 'fly' && dist < 40) {
+            var s = Math.random() < .45 ? freeSpot(f) : null;
+            if (s) {
+              f.spot = s;
+              f.state = 'land';
+            } else {
+              f.target = freePoint();
+            }
+          } else if (f.state === 'land' && dist < 2.5) {
+            f.state = 'rest';
+            f.phase = 0;
+            f.restUntil = now + rand(4, 9);
+          }
+        }
+
+        function drawFly(f) {
+          if (f.state === 'wait') return;
+          var R = f.R;
+          var sx = .1 + .9 * f.open;
+          // Each wingbeat lifts the body a little
+          var bob = f.state === 'rest' ? 0 : -Math.sin(f.phase) * R * .12;
+          ctx.save();
+          ctx.translate(f.x, f.y + bob);
+          ctx.rotate(f.angle);
+          for (var side = -1; side <= 1; side += 2) {
+            ctx.save();
+            ctx.scale(side * sx, 1);
+            ctx.drawImage(f.sprite, -.05 * R, -.9 * R, 1.1 * R, 1.65 * R);
+            ctx.restore();
+          }
+          ctx.fillStyle = 'rgba(' + INK + ', .8)';
+          ctx.beginPath();
+          ctx.ellipse(0, -.02 * R, .06 * R, .42 * R, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = 'rgba(' + INK + ', .6)';
+          ctx.lineWidth = Math.max(.6, R * .03);
+          ctx.beginPath();
+          ctx.moveTo(-.02 * R, -.38 * R);
+          ctx.quadraticCurveTo(-.12 * R, -.62 * R, -.24 * R, -.74 * R);
+          ctx.moveTo(.02 * R, -.38 * R);
+          ctx.quadraticCurveTo(.12 * R, -.62 * R, .24 * R, -.74 * R);
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        // ----- Birds -----
+
+        // Open-paper lanes: above the painting, and between the title and its middle.
+        function lanes() {
+          var out = [];
+          var top = Math.max(H * .05, 14);
+          if (stage.y - 18 - top > 24) out.push([top, stage.y - 18]);
+          var a = Math.max(title.b + 10, stage.y + 10);
+          var b = Math.min(stage.y + stage.s * .42, H * .55);
+          if (b - a > 24) out.push([a, b]);
+          return out;
+        }
+
+        // Where a bird can fly along a lane without crossing the arrows, songs or player.
+        function span(y, pad) {
+          var lo = 10, hi = W - 10;
+          avoid.forEach(function (r) {
+            if (y < r.y - pad || y > r.b + pad) return;
+            if (r.x + (r.r - r.x) / 2 < W / 2) lo = Math.max(lo, r.r + 6);
+            else hi = Math.min(hi, r.x - 6);
+          });
+          return [lo, hi];
+        }
+
+        function spawnBirds() {
+          var ls = lanes();
+          if (!ls.length) return;
+          var lane = ls[Math.floor(Math.random() * ls.length)];
+          var size = Math.max(12, stage.s * rand(.022, .04));
+          if (lane[1] - lane[0] < size * 2) return; // too tight: it would stray out of the lane
+          var y = rand(lane[0] + size, lane[1] - size);
+          var xs = span(y, size);
+          var room = xs[1] - xs[0];
+          if (room < size * 10) return;
+          var dir = Math.random() < .5 ? 1 : -1;
+          var speed = rand(14, 26) * size / 16;
+          var x = dir > 0 ? xs[0] + size + rand(0, room * .45) : xs[1] - size - rand(0, room * .45);
+          var end = dir > 0 ? xs[1] - size : xs[0] + size;
+          var life = Math.min(rand(9, 17), Math.abs(end - x) / speed);
+          var count = Math.random() < .3 ? 2 : 1;
+          for (var i = 0; i < count; i++) {
+            birds.push({
+              x: x - dir * i * size * 1.7,
+              y: y + i * size * .6,
+              y0: y + i * size * .6,
+              dir: dir,
+              speed: speed * (1 - i * .04),
+              size: size * (1 - i * .12),
+              born: now + i * .4,
+              life: life,
+              phase: rand(0, 6),
+              flapUntil: now + rand(1.5, 3.5),
+              glideUntil: 0,
+              lift: .3,
+              seed: rand(0, 100)
+            });
+          }
+        }
+
+        function updateBird(b, dt) {
+          b.x += b.dir * b.speed * dt;
+          b.y = b.y0 + Math.sin(now * .35 + b.seed) * b.size * .8;
+          if (now < b.flapUntil) {
+            b.phase += dt * 6;
+            b.lift = Math.sin(b.phase);
+            if (now + dt >= b.flapUntil) b.glideUntil = now + rand(1.2, 3);
+          } else if (now < b.glideUntil) {
+            b.lift += (.3 - b.lift) * Math.min(1, dt * 3);
+          } else {
+            b.flapUntil = now + rand(1.5, 3.5);
+          }
+        }
+
+        function drawBird(b) {
+          var age = now - b.born;
+          if (age < 0) return;
+          var fade = Math.min(1, age / 2.5, (b.life - age) / 2.5);
+          if (fade <= 0) return;
+          var s = b.size;
+          var w = b.lift;
+          var a = fade * Math.min(.7, .4 + .25 * (s - 12) / 20);
+          // A loose brush stroke per wing: thick at the body, thin at the tip, laid twice.
+          for (var pass = 0; pass < 2; pass++) {
+            var ox = pass ? .5 : 0;
+            var oy = pass ? .35 : 0;
+            ctx.fillStyle = 'rgba(' + INK + ',' + (pass ? a * .5 : a) + ')';
+            for (var side = -1; side <= 1; side += 2) {
+              ctx.beginPath();
+              ctx.moveTo(b.x + ox, b.y + s * .04 + oy);
+              ctx.quadraticCurveTo(b.x + side * s * .2 + ox, b.y - s * .14 - w * s * .12 + oy, b.x + side * s * .5 + ox, b.y - w * s * .2 + oy);
+              ctx.quadraticCurveTo(b.x + side * s * .22 + ox, b.y - s * .07 - w * s * .1 + oy, b.x + ox, b.y + s * .1 + oy);
+              ctx.closePath();
+              ctx.fill();
+            }
+          }
+        }
+
+        // ----- Loop -----
+
+        function frame(t) {
+          raf = null;
+          // 30fps is plenty for slow wings and distant birds, and halves the work of this full-screen canvas.
+          if (last && t - last < 30) {
+            if (!document.hidden) raf = requestAnimationFrame(frame);
+            return;
+          }
+          var dt = Math.min(.05, last ? (t - last) / 1000 : 0);
+          last = t;
+          now += dt;
+
+          if (now > nextBird) {
+            if (birds.length < (W < 700 ? 2 : 3)) spawnBirds();
+            nextBird = now + rand(5, 12);
+          }
+
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          ctx.clearRect(0, 0, W, H);
+
+          birds = birds.filter(function (b) { return now - b.born < b.life; });
+          birds.forEach(function (b) { updateBird(b, dt); drawBird(b); });
+          // Birds pass behind the sleeper
+          if (birds.length && sleeper.complete && sleeper.naturalWidth) {
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.drawImage(sleeper, stage.x, stage.y, stage.s, stage.s);
+            ctx.globalCompositeOperation = 'source-over';
+          }
+
+          flies.forEach(function (f) { updateFly(f, dt); drawFly(f); });
+
+          if (!document.hidden) raf = requestAnimationFrame(frame);
+        }
+
+        function run() {
+          if (raf || document.hidden || reduceMotion || !started) return;
+          last = 0;
+          raf = requestAnimationFrame(frame);
+        }
+
+        document.addEventListener('visibilitychange', run);
+
+        // Reduced motion: a still picture, two resting and two birds in the distance.
+        function still() {
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          ctx.clearRect(0, 0, W, H);
+          flies.forEach(function (f) {
+            f.spot = freeSpot(f);
+            if (!f.spot) return;
+            var p = spotPoint(f.spot, f);
+            f.x = p.x;
+            f.y = p.y;
+            f.angle = f.spot.a;
+            f.open = .85;
+            f.state = 'rest';
+            drawFly(f);
+          });
+          var ls = lanes();
+          if (!ls.length) return;
+          var y = (ls[0][0] + ls[0][1]) / 2;
+          var xs = span(y, 12);
+          var size = Math.max(12, stage.s * .03);
+          [[.35, 0], [.42, .5]].forEach(function (k) {
+            drawBird({ x: xs[0] + (xs[1] - xs[0]) * k[0], y: y + k[1] * size, size: size * (1 - k[1] * .2), lift: .35, born: -10, life: 100 });
+          });
+        }
+
+        // Mobile browsers fire resize when the URL bar shows/hides; only repaint the wings when the width changes.
+        var resizeTimer;
+        var lastWidth = window.innerWidth;
+        window.addEventListener('resize', function () {
+          if (!started) return;
+          clearTimeout(resizeTimer);
+          resizeTimer = setTimeout(function () {
+            measure();
+            if (window.innerWidth !== lastWidth) {
+              lastWidth = window.innerWidth;
+              flies.forEach(paintFly);
+            }
+            if (reduceMotion) still();
+          }, 150);
+        });
+
+        return {
+          start: function () {
+            if (started) return;
+            started = true;
+            measure();
+            for (var i = 0; i < (W < 700 ? 2 : 3); i++) flies.push(makeFly(i));
+            if (reduceMotion) { still(); return; }
+            flies.forEach(function (f, i) { enter(f, i * 3.5); });
+            nextBird = now + 1.5;
+            run();
+          },
+          // Dozing off: the butterflies flit away
+          leave: function () {
+            flies.forEach(function (f) {
+              if (f.state === 'wait') return;
+              f.state = 'leave';
+              f.spot = null;
+              f.glideUntil = 0;
+              f.target = { x: f.x < W / 2 ? -80 : W + 80, y: f.y - rand(60, 200) };
+            });
+          },
+          // Back from the back/forward cache: they come back in
+          restore: function () {
+            if (!started || reduceMotion) return;
+            measure();
+            birds = [];
+            nextBird = now + 3;
+            flies.forEach(function (f, i) { enter(f, 1.5 + i * 3); });
+            run();
+          }
+        };
+      })();
+
       // Open the eyes once the painting is ready to soak in (or after a moment regardless).
-      function ready() { root.classList.add('is-ready'); }
+      // The birds and butterflies arrive once it has woken up and the title has inked in.
+      function ready() {
+        if (root.classList.contains('is-ready')) return;
+        root.classList.add('is-ready');
+        var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        setTimeout(critters.start, reduce ? 300 : 5200);
+      }
       var img = new Image();
       img.src = window.matchMedia('(max-width: 699px)').matches ? 'the-big-sleep/art-sm.webp' : 'the-big-sleep/art.webp';
       (img.decode ? img.decode() : Promise.reject()).then(ready, ready);
@@ -819,12 +1322,14 @@
         next: document.querySelector('[data-next]'),
         leave: function () {
           music.leave(1200);
+          critters.leave();
           document.body.classList.add('is-leaving');
           return 1250;
         },
         // Back button restores this page with its eyes shut; wake it up again.
         restore: function () {
           document.body.classList.remove('is-leaving');
+          critters.restore();
           music.restore(2000);
         }
       });

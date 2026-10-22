@@ -1,0 +1,66 @@
+/* Big prev/next arrows: the same place and size on every page.
+   Each page brings its own color, stroke, label font, hover and motion.
+   Pages that lay out columns around the arrows use these variables too. */
+:root {
+  --arrow-x: clamp(8px, 3vw, 56px);
+  --arrow-w: clamp(38px, 5vw, 70px);
+}
+
+/* Centered a little above the middle, so the long vertical labels clear the songs in the bottom-left */
+.arrow {
+  position: fixed;
+  top: 0;
+  bottom: 16vh;
+  height: fit-content;
+  margin: auto 0;
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  padding: 16px;
+  text-decoration: none;
+}
+
+.arrow[data-prev] { left: var(--arrow-x); }
+.arrow[data-next] { right: var(--arrow-x); }
+
+.arrow svg {
+  display: block;
+  width: var(--arrow-w);
+  height: calc(var(--arrow-w) * 2);
+  fill: none;
+  stroke: currentColor;
+  overflow: visible;
+}
+
+.arrow .label {
+  font-size: 10px;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  writing-mode: vertical-rl;
+}
+
+.arrow[data-prev] .label { transform: rotate(180deg); }
+
+/* Short screens: the labels would run into the songs in the bottom-left */
+@media (max-height: 800px) {
+  .arrow .label { display: none; }
+}
+
+/* Phones: up in the top corners */
+@media (max-width: 699px) {
+  .arrow {
+    top: calc(8px + env(safe-area-inset-top));
+    bottom: auto;
+    margin: 0;
+  }
+
+  .arrow[data-prev] { left: 4px; }
+  .arrow[data-next] { right: 4px; }
+
+  .arrow svg {
+    width: 34px;
+    height: 68px;
+  }
+
+  .arrow .label { display: none; }
+}

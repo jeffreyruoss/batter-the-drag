@@ -7,6 +7,7 @@
   <link rel="preload" href="batter-the-drag.svg" as="image">
   <link rel="icon" type="image/png" href="favicon.png">
   <script>try { var a = sessionStorage.getItem('btd-arrive'); if (a) { sessionStorage.removeItem('btd-arrive'); document.documentElement.dataset.arrive = a; } } catch (e) {}</script>
+  <link rel="stylesheet" href="arrows.css">
   <style>
     * {
       margin: 0;
@@ -31,14 +32,19 @@
 
     body {
       background-color: black;
-      background-image: url('bg-2.webp');
-      background-size: cover;
-      background-position: center;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       gap: 50px;
+    }
+
+    /* The dusty backdrop, on its own layer so it can fade in after the sky */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: url('bg-2.webp') center / cover;
     }
 
     .logo {
@@ -74,11 +80,11 @@
     .mask-container img.universe {
       width: 100%;
       height: 100%;
-      animation: fadeIn 3s ease-in-out, rotateAndScale 100s infinite linear;
+      animation: rotateAndScale 100s infinite linear;
     }
     @media (min-width: 1024px) {
       .mask-container img.universe {
-        animation: fadeIn 3s ease-in-out, rotateAndScale 200s infinite linear;
+        animation-duration: 200s;
       }
     }
 
@@ -92,7 +98,6 @@
       gap: 20px;
       max-width: min(460px, calc(100vw - 40px));
       font-family: 'Arial', sans-serif;
-      animation: fadeIn 3s ease-in-out;
     }
 
     .eyebrow {
@@ -234,41 +239,19 @@
       /* max-width: 85vw; */
       /* max-height: 85vw; */
     }
-    /* Big prev/next arrows */
+    /* Big prev/next arrows (placed by arrows.css) */
     .arrow {
-      position: fixed;
-      top: 50%;
-      left: clamp(8px, 3vw, 56px);
       z-index: 2;
-      display: grid;
-      justify-items: center;
-      gap: 14px;
-      padding: 16px;
-      transform: translateY(-50%);
       color: #6693C8;
-      text-decoration: none;
       font-family: 'Arial', sans-serif;
-      animation: fadeIn 3s ease-in-out;
       transition: color 0.3s;
     }
 
     .arrow svg {
-      width: clamp(38px, 5vw, 70px);
-      height: clamp(76px, 10vw, 140px);
-      stroke: currentColor;
       stroke-width: 1.5;
-      fill: none;
-      overflow: visible;
       transition: transform 0.3s;
     }
 
-    .arrow .label {
-      font-size: 10px;
-      letter-spacing: 0.3em;
-      text-transform: uppercase;
-      writing-mode: vertical-rl;
-      transform: rotate(180deg);
-    }
 
     .arrow:hover {
       color: #fff;
@@ -276,15 +259,6 @@
 
     .arrow:hover svg {
       transform: translateX(-8px);
-    }
-
-    .arrow[data-next] {
-      left: auto;
-      right: clamp(8px, 3vw, 56px);
-    }
-
-    .arrow[data-next] .label {
-      transform: none;
     }
 
     .arrow[data-next]:hover svg {
@@ -306,7 +280,6 @@
       background: rgba(10, 12, 20, 0.6);
       border: 1px solid rgba(102, 147, 200, 0.35);
       font-family: 'Arial', sans-serif;
-      animation: fadeIn 3s ease-in-out;
     }
 
     .player-toggle {
@@ -381,9 +354,6 @@
         max-width: min(1100px, 100vh);
       }
 
-      .arrow .label {
-        display: none;
-      }
     }
 
     @media (max-width: 699px) {
@@ -414,25 +384,6 @@
         height: 30px;
       }
 
-      .arrow {
-        top: calc(8px + env(safe-area-inset-top));
-        left: 4px;
-        transform: none;
-      }
-
-      .arrow[data-next] {
-        left: auto;
-        right: 4px;
-      }
-
-      .arrow svg {
-        width: 34px;
-        height: 68px;
-      }
-
-      .arrow .label {
-        display: none;
-      }
     }
 
     .sr-only {
@@ -444,19 +395,69 @@
       white-space: nowrap;
     }
 
-    /* Leaving: fade to black */
-    @media (prefers-reduced-motion: no-preference) {
-      body {
-        transition: opacity 0.6s ease-in;
-      }
+    /* Full-screen spinning sky: the page opens on it, then it pulls back into the letters */
+    .sky {
+      position: fixed;
+      inset: 0;
+      z-index: 3;
+      overflow: hidden;
+      pointer-events: none;
+      visibility: hidden;
     }
 
-    body.is-leaving {
-      opacity: 0;
+    /* Big enough that the spin never shows a corner */
+    .sky img {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 150vmax;
+      height: 150vmax;
+      margin: -75vmax 0 0 -75vmax;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .sky { animation: skyIn 3.8s ease-in-out both; }
+      .sky img { animation: spin 50s linear infinite; }
+      .mask-container img.universe { animation-name: fadeIn, rotateAndScale; animation-duration: 1.8s, 100s; animation-delay: 1.8s, 0s; animation-fill-mode: both, none; animation-timing-function: ease-in-out, linear; animation-iteration-count: 1, infinite; }
+      body::before { animation: fadeIn 1.6s 3.2s ease both; }
+      .info { animation: fadeIn 1.6s 3.4s ease both; }
+      .arrow { animation: fadeIn 1.6s 3.6s ease both; }
+      .player { animation: fadeIn 1.6s 3.8s ease both; }
+
+      /* Leaving: everything else goes, the sky floods back in, then black */
+      .is-leaving .sky { animation: skyOut 1.3s ease-in-out both; }
+      .is-leaving .logo { opacity: 0; transition: opacity .5s .3s; }
+      .is-leaving::before,
+      .is-leaving :is(.info, .arrow, .player) { animation: fadeOut .45s ease-in both; }
+    }
+
+    @media (prefers-reduced-motion: no-preference) and (min-width: 1024px) {
+      .mask-container img.universe { animation-duration: 1.8s, 200s; }
+    }
+
+    @keyframes skyIn {
+      0% { opacity: 0; visibility: visible; transform: scale(1.12); }
+      35%, 55% { opacity: 1; }
+      100% { opacity: 0; visibility: hidden; transform: scale(1); }
+    }
+
+    @keyframes skyOut {
+      0% { opacity: 0; visibility: visible; transform: scale(1); }
+      50% { opacity: 1; }
+      100% { opacity: 0; visibility: visible; transform: scale(1.12); }
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes fadeOut {
+      to { opacity: 0; }
     }
   </style>
 </head>
 <body>
+  <div class="sky" aria-hidden="true"><img src="text-bg-2.webp" alt=""></div>
   <canvas id="particlesCanvas"></canvas>
   <div class="logo">
     <div class="mask-container">
@@ -490,12 +491,12 @@
       </div>
     </div>
   </div>
-  <a class="arrow" href="ensete.html" data-prev>
+  <a class="arrow" href="ensete" data-prev>
     <span class="sr-only">Previous: Ensete</span>
     <svg viewBox="0 0 50 100" aria-hidden="true"><path d="M48 2 2 50 48 98"/></svg>
     <span class="label" aria-hidden="true">Ensete</span>
   </a>
-  <a class="arrow" href="the-big-sleep.html" data-next>
+  <a class="arrow" href="the-big-sleep" data-next>
     <span class="sr-only">Next: The Big Sleep</span>
     <svg viewBox="0 0 50 100" aria-hidden="true"><path d="M2 2 48 50 2 98"/></svg>
     <span class="label" aria-hidden="true">The Big Sleep</span>
@@ -534,9 +535,9 @@
         prev: document.querySelector('[data-prev]'),
         next: document.querySelector('[data-next]'),
         leave: function () {
-          music.leave(550);
+          music.leave(1200);
           document.body.classList.add('is-leaving');
-          return 600;
+          return 1300;
         },
         // Back button restores this page faded out; bring it back.
         restore: function () {

@@ -19,6 +19,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Italiana&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
   <script>document.documentElement.classList.replace('no-js', 'js');</script>
   <script>try { var a = sessionStorage.getItem('btd-arrive'); if (a) { sessionStorage.removeItem('btd-arrive'); document.documentElement.dataset.arrive = a; } } catch (e) {}</script>
+  <link rel="stylesheet" href="arrows.css">
   <style>
     :root {
       --ink: #7a7559;          /* album-cover title color, lifted a little for screens */
@@ -293,42 +294,22 @@
       filter: drop-shadow(0 0 10px rgba(239, 235, 203, .45));
     }
 
-    /* ---------- Big next arrow ---------- */
+    /* ---------- Big next arrow (placed by arrows.css) ---------- */
 
     .arrow {
-      position: fixed;
-      top: 50%;
-      right: clamp(8px, 3vw, 56px);
       z-index: 6;
-      display: grid;
-      justify-items: center;
-      gap: 14px;
-      padding: 16px;
-      transform: translateY(-50%);
       color: var(--ink);
-      text-decoration: none;
       filter: drop-shadow(0 0 8px rgba(0, 0, 0, .9));
       transition: color .4s;
     }
 
     .arrow svg {
-      width: clamp(38px, 5vw, 70px);
-      height: clamp(76px, 10vw, 140px);
-      stroke: currentColor;
       stroke-width: 1;
-      fill: none;
-      overflow: visible;
       animation: nudge 3.2s 5s ease-in-out infinite;
       transition: filter .4s;
     }
 
-    .arrow .label {
-      font-size: 10px;
-      letter-spacing: .3em;
-      text-transform: uppercase;
-      writing-mode: vertical-rl;
-      opacity: .8;
-    }
+    .arrow .label { opacity: .8; }
 
     .arrow:hover,
     .arrow:focus-visible { color: var(--light); }
@@ -526,16 +507,13 @@
       .tracks { font-size: 15px; }
       .listen { padding: 14px 20px; font-size: 12px; letter-spacing: .26em; }
       .social svg { width: 26px; height: 26px; }
-      .title .band { font-size: 9.4vw; }
-      .title .album { font-size: 5.6vw; }
-      /* The opening sits mid-screen on phones, so park the arrow bottom-right, clear of the light */
-      .arrow { top: auto; bottom: calc(var(--gutter) + env(safe-area-inset-bottom) + 48px); right: 4px; transform: none; }
+      /* Smaller on phones so the line ends short of the arrow in the top-right corner */
+      .title .band { font-size: 8vw; }
+      .title .album { font-size: 4.8vw; }
       .info { bottom: calc(var(--gutter) + env(safe-area-inset-bottom) + 64px); }
       .player { left: var(--gutter); right: var(--gutter); bottom: calc(14px + env(safe-area-inset-bottom)); width: auto; }
       .gate svg { width: 52px; height: 52px; }
       .gate button { font-size: 12px; letter-spacing: .3em; }
-      .arrow svg { width: 34px; height: 68px; }
-      .arrow .label { display: none; }
     }
 
     @media (max-height: 520px) {
@@ -708,7 +686,7 @@
     </nav>
   </div>
 
-  <a class="arrow" href="ensete.html" data-next>
+  <a class="arrow" href="ensete" data-next>
     <span class="sr-only">Next: </span>
     <svg viewBox="0 0 50 100" aria-hidden="true"><path d="M2 2 48 50 2 98"/></svg>
     <span class="label">Ensete</span>
