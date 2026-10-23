@@ -7,13 +7,13 @@
   <meta name="description" content="Unfathomable Depths, the 2004 EP from Batter The Drag. Listen on Bandcamp.">
   <meta property="og:title" content="Batter The Drag · Unfathomable Depths">
   <meta property="og:description" content="The 2004 EP. Listen on Bandcamp.">
-  <meta property="og:image" content="https://batterthedrag.com/unfathomable-depths/cover.jpg">
+  <meta property="og:image" content="https://batterthedrag.com/unfathomable-depths/cover-restored.jpg">
   <meta property="og:url" content="https://batterthedrag.com/unfathomable-depths">
   <meta property="og:type" content="music.album">
   <meta name="theme-color" content="#f6f5f0">
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="preload" href="unfathomable-depths/art.webp" as="image" media="(min-width: 700px)">
-  <link rel="preload" href="unfathomable-depths/art-sm.webp" as="image" media="(max-width: 699px)">
+  <link rel="preload" href="unfathomable-depths/art-restored.webp" as="image" media="(min-width: 700px)">
+  <link rel="preload" href="unfathomable-depths/art-restored-sm.webp" as="image" media="(max-width: 699px)">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@500;600&family=Big+Shoulders+Stencil:wght@700;900&display=swap" rel="stylesheet">
@@ -262,7 +262,7 @@
 
     .tracks li span {
       font-family: var(--stencil);
-      font-size: 13px;
+      font-size: 15px;
       font-weight: 900;
       margin-right: 6px;
       color: var(--grey);
@@ -328,7 +328,8 @@
 
     /* ---------- Big prev arrow (placed by arrows.css) ---------- */
 
-    .arrow {
+    .arrow,
+    .discog {
       z-index: 6;
       color: var(--ink);
       transition: color .3s;
@@ -340,10 +341,11 @@
       animation: nudge 3.2s 5s ease-in-out infinite;
     }
 
-    .arrow .label { font-family: var(--stencil); font-weight: 900; }
 
     .arrow:hover,
-    .arrow:focus-visible { color: var(--blue); }
+    .discog:hover,
+    .arrow:focus-visible,
+    .discog:focus-visible { color: var(--blue); }
     .arrow:hover svg,
     .arrow:focus-visible svg { animation-play-state: paused; }
 
@@ -548,6 +550,8 @@
     }
 
     @media (max-width: 699px) {
+      /* The arrow above the songs, not over them */
+      :root { --arrow-top: 42%; }
       .tracks { font-size: 16px; }
       .eyebrow { font-size: 18px; }
       .listen { padding: 12px 18px 11px; font-size: 15px; }
@@ -675,14 +679,16 @@
       .info > :nth-child(2) { animation-delay: 2.05s; }
       .info > :nth-child(3) { animation-delay: 2.2s; }
       .info > :nth-child(4) { animation-delay: 2.35s; }
-      .arrow { animation: arrow-in 1s 2.6s var(--ease-out) both; }
+      .arrow,
+      .discog { animation: arrow-in 1s 2.6s var(--ease-out) both; }
       .player { animation: rise .8s 2.8s var(--ease-out) both; }
       .sleeve .ghost { animation: misregister 7s 4s steps(1) infinite; }
       .sleeve img:not(.ghost) { animation: jolt 7s 4s steps(1) infinite; }
 
       .is-leaving .exit-ink { animation: flood .95s cubic-bezier(.55, .05, .8, .3) forwards; }
       .is-leaving .player,
-      .is-leaving .arrow { animation: none; }
+      .is-leaving .arrow,
+      .is-leaving .discog { animation: none; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -743,12 +749,12 @@
       </div>
       <div class="sleeve">
         <picture>
-          <source media="(max-width: 699px)" srcset="unfathomable-depths/art-sm.webp">
-          <img src="unfathomable-depths/art.webp" alt="Unfathomable Depths cover: Batter The Drag in heavy stencil letters over a black disc and blue ink splatter" width="1400" height="1400">
+          <source media="(max-width: 699px)" srcset="unfathomable-depths/art-restored-sm.webp">
+          <img src="unfathomable-depths/art-restored.webp" alt="Unfathomable Depths cover: Batter The Drag in heavy stencil letters over a black disc and blue ink splatter" width="1254" height="1254">
         </picture>
         <picture aria-hidden="true">
-          <source media="(max-width: 699px)" srcset="unfathomable-depths/art-sm.webp">
-          <img class="ghost" src="unfathomable-depths/art.webp" alt="" width="1400" height="1400">
+          <source media="(max-width: 699px)" srcset="unfathomable-depths/art-restored-sm.webp">
+          <img class="ghost" src="unfathomable-depths/art-restored.webp" alt="" width="1254" height="1254">
         </picture>
       </div>
     </div>
@@ -787,7 +793,10 @@
   <a class="arrow" href="the-big-sleep" data-prev>
     <span class="sr-only">Previous: The Big Sleep</span>
     <svg viewBox="0 0 50 100" aria-hidden="true"><path d="M48 2 2 50 48 98"/></svg>
-    <span class="label" aria-hidden="true">The Big Sleep</span>
+  </a>
+  <a class="discog" href="discography" data-discography>
+    <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1 1h6v6H1zM9 1h6v6H9zM1 9h6v6H1zM9 9h6v6H9z"/></svg>
+    <span>Discography</span>
   </a>
 
   <div class="player" role="group" aria-label="Music player">
@@ -942,7 +951,7 @@
 
       // Keep ink off the words and controls.
       function blockers() {
-        return ['.masthead', '.info', '.player', '.arrow'].map(function (q) {
+        return ['.masthead', '.info', '.player', '.arrow', '.discog'].map(function (q) {
           return document.querySelector(q).getBoundingClientRect();
         }).filter(function (r) { return r.width > 1; });
       }
@@ -1040,7 +1049,8 @@
           root.style.setProperty('--ex', x + 'px');
           root.style.setProperty('--ey', y + 'px');
           root.style.setProperty('--exs', (reach / 36).toFixed(2));
-          exitSplats = [makeSplat(x + 40, y - 30, 26, '#121212', 0), makeSplat(x + 70, y + 50, 16, '#2f86b4', 60)];
+          var inward = x < window.innerWidth / 2 ? 1 : -1; // toward the middle, so the Discography link's splats stay on screen
+          exitSplats = [makeSplat(x + inward * 40, y + 30, 26, '#121212', 0), makeSplat(x + inward * 70, y + 70, 16, '#2f86b4', 60)];
           splats.push.apply(splats, exitSplats);
           kick();
           document.body.classList.add('is-leaving');

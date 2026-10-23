@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Batter The Drag · The Wendt LP</title>
-  <meta name="description" content="The Wendt LP, the new album from Batter The Drag. Listen on Bandcamp.">
-  <meta property="og:title" content="Batter The Drag · The Wendt LP">
-  <meta property="og:description" content="The new LP. Listen on Bandcamp.">
+  <title>Batter The Drag · The Wendt</title>
+  <meta name="description" content="The Wendt, new from Batter The Drag. Listen on Bandcamp.">
+  <meta property="og:title" content="Batter The Drag · The Wendt">
+  <meta property="og:description" content="New from Batter The Drag. Listen on Bandcamp.">
   <meta property="og:image" content="https://batterthedrag.com/wendt/cover.jpg">
   <meta property="og:url" content="https://batterthedrag.com/">
   <meta property="og:type" content="music.album">
@@ -213,7 +213,7 @@
     .tracks button:focus-visible { outline: 1px solid var(--light); outline-offset: 4px; }
 
     .tracks li span {
-      font-size: 11px;
+      font-size: 15px;
       letter-spacing: .2em;
       margin-right: 7px;
       color: var(--ink);
@@ -231,7 +231,7 @@
       border: 1px solid rgba(122, 117, 89, .7);
       color: var(--light);
       text-decoration: none;
-      font-size: 13px;
+      font-size: 15px;
       letter-spacing: .32em;
       text-transform: uppercase;
       overflow: hidden;
@@ -296,7 +296,8 @@
 
     /* ---------- Big next arrow (placed by arrows.css) ---------- */
 
-    .arrow {
+    .arrow,
+    .discog {
       --streak: var(--light);
       z-index: 6;
       color: var(--ink);
@@ -310,10 +311,11 @@
       transition: filter .4s;
     }
 
-    .arrow .label { opacity: .8; }
 
     .arrow:hover,
-    .arrow:focus-visible { color: var(--light); }
+    .discog:hover,
+    .arrow:focus-visible,
+    .discog:focus-visible { color: var(--light); }
     .arrow:hover svg,
     .arrow:focus-visible svg {
       animation-play-state: paused;
@@ -372,7 +374,7 @@
     }
 
     .player-title {
-      font-size: 14px;
+      font-size: 15px;
       letter-spacing: .14em;
       text-transform: uppercase;
       color: #a8a17f;
@@ -464,7 +466,7 @@
       border: 0;
       background: none;
       color: var(--ink);
-      font: 500 13px 'Jost', sans-serif;
+      font: 500 15px 'Jost', sans-serif;
       letter-spacing: .42em;
       text-transform: uppercase;
       cursor: pointer;
@@ -506,15 +508,18 @@
 
     @media (max-width: 699px) {
       .tracks { font-size: 15px; }
-      .listen { padding: 14px 20px; font-size: 12px; letter-spacing: .26em; }
+      .listen { padding: 14px 20px; font-size: 15px; letter-spacing: .14em; }
+      .info { max-width: calc(100vw - var(--gutter) * 2); }
+      /* The arrow above the songs, not over them */
+      :root { --arrow-top: 38%; }
       .social svg { width: 26px; height: 26px; }
-      /* Smaller on phones so the line ends short of the arrow in the top-right corner */
+      /* Smaller on phones so the line ends short of the Discography icon in the top-right corner */
       .title .band { font-size: 8vw; }
       .title .album { font-size: 4.8vw; }
       .info { bottom: calc(var(--gutter) + env(safe-area-inset-bottom) + 64px); }
       .player { left: var(--gutter); right: var(--gutter); bottom: calc(14px + env(safe-area-inset-bottom)); width: auto; }
       .gate svg { width: 52px; height: 52px; }
-      .gate button { font-size: 12px; letter-spacing: .3em; }
+      .gate button { font-size: 15px; letter-spacing: .3em; }
     }
 
     @media (max-height: 520px) {
@@ -604,7 +609,7 @@
     }
 
     /* Hold everything in the dark until the visitor picks sound / no sound */
-    .js:not(.is-ready) :is(.scene, .title, .info, .arrow, .player) { visibility: hidden; }
+    .js:not(.is-ready) :is(.scene, .title, .info, .arrow, .discog, .player) { visibility: hidden; }
 
     @media (prefers-reduced-motion: no-preference) {
       .is-ready .bg { animation: enter 5.5s .5s var(--ease-out) both, drift 40s 6s ease-in-out infinite alternate; }
@@ -616,7 +621,8 @@
       .is-ready .info > :nth-child(2) { animation-delay: 3.8s; }
       .is-ready .info > :nth-child(3) { animation-delay: 4s; }
       .is-ready .info > :nth-child(4) { animation-delay: 4.2s; }
-      .is-ready .arrow { animation: arrow-in 1.6s 4.4s var(--ease-out) both; }
+      .is-ready .arrow,
+      .is-ready .discog { animation: arrow-in 1.6s 4.4s var(--ease-out) both; }
       .is-ready .player { animation: rise 1.4s 4.6s var(--ease-out) both; }
       .is-ready .title .band::after,
       .is-ready .title .album::after { animation: sheen 11s 6s ease-in-out infinite; }
@@ -630,8 +636,10 @@
       .is-leaving .title,
       .is-leaving .info,
       .is-leaving .arrow,
+      .is-leaving .discog,
       .is-leaving .player { opacity: 0; filter: blur(8px); transition: opacity .6s, filter .6s; }
       .is-leaving .arrow,
+      .is-leaving .discog,
       .is-leaving .player { animation: none; }
     }
 
@@ -655,13 +663,13 @@
   <div class="grain" aria-hidden="true"></div>
   <div class="vignette" aria-hidden="true"></div>
 
-  <h1 class="title" aria-label="Batter The Drag. The Wendt LP">
+  <h1 class="title" aria-label="Batter The Drag. The Wendt">
     <span class="band split" data-text="Batter The Drag" aria-hidden="true">Batter The Drag</span>
-    <span class="album split" data-text="The Wendt LP" aria-hidden="true">The Wendt LP</span>
+    <span class="album split" data-text="The Wendt" aria-hidden="true">The Wendt</span>
   </h1>
 
   <div class="info">
-    <p class="eyebrow">The new LP</p>
+    <p class="eyebrow">The Wendt</p>
     <ol class="tracks">
       <li><button type="button" data-track="0"><span>I</span>Masmusa</button></li>
       <li><button type="button" data-track="1"><span>II</span>Pangsaging</button></li>
@@ -688,9 +696,12 @@
   </div>
 
   <a class="arrow" href="ensete" data-next>
-    <span class="sr-only">Next: </span>
+    <span class="sr-only">Next: Ensete</span>
     <svg viewBox="0 0 50 100" aria-hidden="true"><path d="M2 2 48 50 2 98"/></svg>
-    <span class="label">Ensete</span>
+  </a>
+  <a class="discog" href="discography" data-discography>
+    <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1 1h6v6H1zM9 1h6v6H9zM1 9h6v6H1zM9 9h6v6H9z"/></svg>
+    <span>Discography</span>
   </a>
 
   <div class="player" role="group" aria-label="Music player">

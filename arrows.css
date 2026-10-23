@@ -1,12 +1,12 @@
 /* Big prev/next arrows: the same place and size on every page.
-   Each page brings its own color, stroke, label font, hover and motion.
+   Each page brings its own color, stroke, hover and motion.
    Pages that lay out columns around the arrows use these variables too. */
 :root {
   --arrow-x: clamp(8px, 3vw, 56px);
   --arrow-w: clamp(38px, 5vw, 70px);
 }
 
-/* Centered a little above the middle, so the long vertical labels clear the songs in the bottom-left */
+/* Centered a little above the middle */
 .arrow {
   position: fixed;
   top: 0;
@@ -15,7 +15,6 @@
   margin: auto 0;
   display: grid;
   justify-items: center;
-  gap: 14px;
   padding: 16px;
   text-decoration: none;
 }
@@ -32,18 +31,26 @@
   overflow: visible;
 }
 
-.arrow .label {
-  font-size: 10px;
-  letter-spacing: .3em;
+/* Discography: top right on every page. Each page colors it like its arrows. */
+.discog {
+  position: fixed;
+  top: calc(clamp(14px, 2.4vw, 32px) + env(safe-area-inset-top));
+  right: var(--arrow-x);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  font-size: 15px;
+  line-height: 1;
+  letter-spacing: .25em;
   text-transform: uppercase;
-  writing-mode: vertical-rl;
+  text-decoration: none;
 }
 
-.arrow[data-prev] .label { transform: rotate(180deg); }
-
-/* Short screens: the labels would run into the songs in the bottom-left */
-@media (max-height: 800px) {
-  .arrow .label { display: none; }
+.discog svg {
+  width: 13px;
+  height: 13px;
+  fill: currentColor;
 }
 
 /* The hint streak nav.js shoots into the next arrow; color from the arrow's --streak, else the arrow's color */
@@ -72,21 +79,40 @@
   box-shadow: 0 0 12px 4px currentColor;
 }
 
-/* Phones: up in the top corners */
+/* Phones: smaller, hugging the edges, centered on --arrow-top (the middle unless a page
+   lifts them clear of its songs). 50px is half the arrow's height. */
 @media (max-width: 699px) {
   .arrow {
-    top: calc(8px + env(safe-area-inset-top));
+    top: calc(var(--arrow-top, 50%) - 50px);
     bottom: auto;
     margin: 0;
   }
 
   .arrow[data-prev] { left: 4px; }
   .arrow[data-next] { right: 4px; }
+  /* Just the icon: the words would run into the page titles */
+  .discog {
+    top: calc(4px + env(safe-area-inset-top));
+    right: 4px;
+    padding: 14px;
+  }
+
+  .discog svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .discog span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
 
   .arrow svg {
     width: 34px;
     height: 68px;
   }
-
-  .arrow .label { display: none; }
 }

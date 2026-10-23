@@ -6,7 +6,7 @@
 // in <head> and exposes it as <html data-arrive="...">.
 (function () {
   // opts: prev, next (the arrow <a> elements; either may be null)
-  //   leave(link, dir): play this page's exit ('prev' | 'next'); return ms to wait before going
+  //   leave(link, dir): play this page's exit ('prev' | 'next' | 'discography'); return ms to wait before going
   //   canLeave(): optional; return false to ignore navigation (e.g. before the intro starts)
   //   restore(): optional; the back/forward cache brought the page back mid-exit, so undo it
   // Returns { hint() }: call it once the page's intro has started (its arrow animations are applied).
@@ -24,7 +24,9 @@
       timer = setTimeout(function () { location.href = link.href; }, ms);
     }
 
-    [[opts.prev, 'prev'], [opts.next, 'next']].forEach(function (pair) {
+    // The Discography link (in every page's top right) leaves with the same exit
+    var discog = document.querySelector('[data-discography]');
+    [[opts.prev, 'prev'], [opts.next, 'next'], [discog, 'discography']].forEach(function (pair) {
       if (!pair[0]) return;
       pair[0].addEventListener('click', function (e) {
         if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;

@@ -22,8 +22,10 @@
   <link rel="stylesheet" href="arrows.css">
   <style>
     :root {
-      --paper: #e6e5de;        /* the painting's paper, sampled */
-      --paper-edge: #cdd0cc;   /* its cooler, greyer edges */
+      --paper: #e7e7e4;        /* the painting's paper, sampled */
+      --paper-edge: rgba(176, 178, 186, .5); /* its cooler, greyer edges */
+      /* The painting's own wash, tiled across the page at about the painting's scale */
+      --wash: url('the-big-sleep/paper.webp') 0 0 / 420px auto repeat fixed;
       --red: #860e1a;          /* album-cover title red */
       --ink: #19140a;          /* "as told by" near-black */
       --ink-soft: #4b4334;
@@ -53,8 +55,9 @@
       font-family: 'EB Garamond', 'Iowan Old Style', Georgia, serif;
       -webkit-font-smoothing: antialiased;
       background:
-        radial-gradient(ellipse 70% 60% at 62% 42%, #efeee8, transparent 70%),
-        radial-gradient(ellipse 120% 100% at 50% 50%, var(--paper) 40%, var(--paper-edge) 100%);
+        radial-gradient(ellipse 120% 100% at 50% 50%, transparent 40%, var(--paper-edge) 100%),
+        var(--wash),
+        var(--paper);
     }
 
     a { color: inherit; }
@@ -80,20 +83,20 @@
     .blooms i:nth-child(1) {
       left: -25vmax;
       bottom: -30vmax;
-      background: radial-gradient(closest-side, rgba(167, 127, 42, .16), transparent);
+      background: radial-gradient(closest-side, rgba(150, 148, 172, .2), transparent);
     }
 
     .blooms i:nth-child(2) {
       right: -28vmax;
       top: -32vmax;
-      background: radial-gradient(closest-side, rgba(126, 140, 176, .2), transparent);
+      background: radial-gradient(closest-side, rgba(160, 165, 172, .22), transparent);
     }
 
     .blooms i:nth-child(3) {
       right: -20vmax;
       bottom: -40vmax;
       width: 55vmax;
-      background: radial-gradient(closest-side, rgba(134, 14, 26, .06), transparent);
+      background: radial-gradient(closest-side, rgba(196, 172, 138, .14), transparent);
     }
 
     .grain {
@@ -174,7 +177,7 @@
 
     .t-album {
       position: relative;
-      font-size: calc(var(--size) * .074);
+      font-size: max(15px, calc(var(--size) * .074));
       color: var(--red);
       letter-spacing: -.005em;
       white-space: nowrap;
@@ -182,14 +185,14 @@
 
     .t-by {
       margin: .1em 23% 0 0;
-      font-size: calc(var(--size) * .033);
+      font-size: max(15px, calc(var(--size) * .033));
       font-style: italic;
       color: var(--ink);
     }
 
     .t-band {
       margin-top: .04em;
-      font-size: calc(var(--size) * .046);
+      font-size: max(15px, calc(var(--size) * .046));
       color: var(--ink);
       white-space: nowrap;
     }
@@ -210,6 +213,38 @@
       stroke-linecap: round;
       vector-effect: non-scaling-stroke;
       opacity: .8;
+    }
+
+    /* ---------- Clouds: watercolor, drifting over the paper, behind the sleeper ---------- */
+
+    /* Over the painting's own paper too, but cut around the sleeper (script sets --sx/--sy/--sw/--sh to its box) */
+    .clouds {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      mix-blend-mode: multiply;
+      -webkit-mask-image: linear-gradient(#000 0 0), url('the-big-sleep/breath-mask.png');
+      -webkit-mask-position: 0 0, var(--sx, -9999px) var(--sy, 0);
+      -webkit-mask-size: 100% 100%, var(--sw, 0) var(--sh, 0);
+      -webkit-mask-repeat: no-repeat;
+      -webkit-mask-composite: xor;
+      mask-image: linear-gradient(#000 0 0), url('the-big-sleep/breath-mask.png');
+      mask-position: 0 0, var(--sx, -9999px) var(--sy, 0);
+      mask-size: 100% 100%, var(--sw, 0) var(--sh, 0);
+      mask-repeat: no-repeat;
+      mask-composite: exclude;
+    }
+
+    .clouds canvas {
+      position: absolute;
+      left: 0;
+      animation: drift var(--dur) linear var(--delay) infinite;
+    }
+
+    @keyframes drift {
+      from { transform: translateX(-100%); }
+      to   { transform: translateX(100vw); }
     }
 
     /* ---------- Birds and butterflies, painted on a canvas over the painting ---------- */
@@ -236,7 +271,7 @@
     }
 
     .eyebrow {
-      font-size: 14px;
+      font-size: 15px;
       font-weight: 500;
       letter-spacing: .34em;
       text-transform: uppercase;
@@ -265,7 +300,7 @@
 
     .tracks li span {
       margin-right: 5px;
-      font-size: 12px;
+      font-size: 15px;
       font-style: italic;
       color: var(--ink-faint);
     }
@@ -276,13 +311,14 @@
       align-items: center;
       gap: 14px;
       justify-self: start;
-      padding: 14px 24px;
+      padding: 14px 20px;
       border: 1px solid rgba(25, 20, 10, .55);
       color: var(--ink);
       text-decoration: none;
-      font-size: 13px;
+      white-space: nowrap;
+      font-size: 15px;
       font-weight: 500;
-      letter-spacing: .3em;
+      letter-spacing: .16em;
       text-transform: uppercase;
       overflow: hidden;
       isolation: isolate;
@@ -342,7 +378,8 @@
 
     /* ---------- Big prev/next arrows (placed by arrows.css) ---------- */
 
-    .arrow {
+    .arrow,
+    .discog {
       z-index: 6;
       color: var(--red);
       transition: color .4s;
@@ -353,16 +390,10 @@
       transition: transform .4s var(--ease-out);
     }
 
-    .arrow .label {
-      font-weight: 500;
-      color: var(--ink-soft);
-      transition: color .4s;
-    }
-
     .arrow:hover,
-    .arrow:focus-visible { color: var(--ink); }
-    .arrow:hover .label,
-    .arrow:focus-visible .label { color: var(--red); }
+    .discog:hover,
+    .arrow:focus-visible,
+    .discog:focus-visible { color: var(--ink); }
     .arrow[data-prev]:hover svg,
     .arrow[data-prev]:focus-visible svg { transform: translateX(-8px); }
     .arrow[data-next]:hover svg,
@@ -499,16 +530,19 @@
       inset: -90px auto -200px calc(var(--gutter) * -1);
       width: 100vw;
       pointer-events: none;
-      background: linear-gradient(to bottom, rgba(230, 229, 222, 0), rgba(230, 229, 222, .9) 80px, var(--paper) 120px);
+      background: var(--wash), var(--paper);
+      -webkit-mask-image: linear-gradient(to bottom, transparent, rgba(0, 0, 0, .9) 80px, #000 120px);
+      mask-image: linear-gradient(to bottom, transparent, rgba(0, 0, 0, .9) 80px, #000 120px);
     }
 
     @media (max-width: 699px) {
-      /* Below the arrows in the top corners */
+      /* Below the Discography icon; the arrows sit above the songs, not over them */
+      :root { --arrow-top: 40%; }
       .stage { top: calc(env(safe-area-inset-top) + 96px); }
       .info { bottom: calc(env(safe-area-inset-bottom) + 86px); gap: 14px; }
-      .eyebrow { font-size: 12px; letter-spacing: .28em; }
+      .eyebrow { font-size: 15px; letter-spacing: .28em; }
       .tracks { font-size: 15px; gap: 2px 12px; }
-      .listen { padding: 12px 18px; font-size: 12px; letter-spacing: .24em; }
+      .listen { padding: 12px 18px; font-size: 15px; letter-spacing: .14em; }
       .social svg { width: 24px; height: 24px; }
       .player { left: var(--gutter); right: var(--gutter); bottom: calc(14px + env(safe-area-inset-bottom)); width: auto; }
     }
@@ -527,7 +561,7 @@
       :root {
         --col-l: calc(var(--arrow-x) + var(--arrow-w) + 40px);
         --col-r: calc(var(--arrow-x) + var(--arrow-w) + 32px);
-        --info-w: 320px;
+        --info-w: 340px;
         --region: calc(100vw - var(--col-l) - var(--info-w) - 24px - var(--col-r));
       }
 
@@ -632,13 +666,13 @@
     }
 
     /* Hold the page closed until the painting has loaded */
-    .js:not(.is-ready) :is(.art, .title, .info, .arrow, .player) { visibility: hidden; }
+    .js:not(.is-ready) :is(.art, .title, .clouds, .info, .arrow, .discog, .player) { visibility: hidden; }
 
     @media (prefers-reduced-motion: no-preference) {
       .is-ready .lids { animation: wake 2.6s .2s ease-in-out both; }
       .is-ready .bleed { animation: soak 4.2s .9s cubic-bezier(.3, .1, .3, 1) both; }
       .is-ready .paint.base { animation: dry 5s .9s ease-out both; }
-      .is-ready .paint.breath { animation: dry 5s .9s ease-out both, breathe 7s 5s ease-in-out infinite; }
+      .is-ready .paint.breath { animation: dry 5s .9s ease-out both, breathe 4.5s 5s ease-in-out infinite; }
       .is-ready .title .split > span { display: inline-block; white-space: pre; animation: ink 1.6s calc(2.3s + var(--i) * 75ms) var(--ease-out) both; }
       .is-ready .t-by { animation: fade-in 1.6s 3.4s ease both; }
       .is-ready .t-band.split > span { animation-delay: calc(3.7s + var(--i) * 45ms); }
@@ -648,8 +682,10 @@
       .is-ready .info > :nth-child(2) { animation-delay: 3.4s; }
       .is-ready .info > :nth-child(3) { animation-delay: 3.6s; }
       .is-ready .info > :nth-child(4) { animation-delay: 3.8s; }
-      .is-ready .arrow { animation: fade-in 1.6s 4s ease both; }
+      .is-ready .arrow,
+      .is-ready .discog { animation: fade-in 1.6s 4s ease both; }
       .is-ready .player { animation: rise 1.4s 4.2s var(--ease-out) both; }
+      .is-ready .clouds { animation: fade-in 5s 2.6s ease both; }
       .blooms i:nth-child(1) { animation: wander-a 38s ease-in-out infinite alternate; }
       .blooms i:nth-child(2) { animation: wander-b 46s ease-in-out infinite alternate; }
       .blooms i:nth-child(3) { animation: wander-a 52s -20s ease-in-out infinite alternate-reverse; }
@@ -659,12 +695,15 @@
       .is-leaving .stage { filter: blur(4px); transition: filter 1.2s ease-in; }
       .is-leaving .info,
       .is-leaving .arrow,
+      .is-leaving .discog,
       .is-leaving .player { opacity: 0; transition: opacity .6s; animation: none; }
-      .is-leaving .critters { opacity: 0; transition: opacity .8s .35s; }
+      .is-leaving .critters,
+      .is-leaving .clouds { opacity: 0; transition: opacity .8s .35s; animation: none; }
     }
 
     @media (prefers-reduced-motion: reduce) {
       .lids { display: none; }
+      .clouds canvas { animation-play-state: paused; }
     }
   </style>
 </head>
@@ -684,6 +723,8 @@
       <span class="t-band split" aria-hidden="true">Batter The Drag</span>
     </h1>
   </div>
+
+  <div class="clouds" aria-hidden="true"></div>
 
   <canvas class="critters" aria-hidden="true"></canvas>
 
@@ -726,12 +767,14 @@
   <a class="arrow" href="the-universe-is-ours" data-prev>
     <span class="sr-only">Previous: The Universe Is Ours</span>
     <svg viewBox="0 0 50 100" aria-hidden="true"><path d="M48 2 2 50 48 98"/></svg>
-    <span class="label" aria-hidden="true">The Universe Is Ours</span>
   </a>
   <a class="arrow" href="unfathomable-depths" data-next>
     <span class="sr-only">Next: Unfathomable Depths</span>
     <svg viewBox="0 0 50 100" aria-hidden="true"><path d="M2 2 48 50 2 98"/></svg>
-    <span class="label" aria-hidden="true">Unfathomable Depths</span>
+  </a>
+  <a class="discog" href="discography" data-discography>
+    <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1 1h6v6H1zM9 1h6v6H9zM1 9h6v6H1zM9 9h6v6H9z"/></svg>
+    <span>Discography</span>
   </a>
 
   <div class="player" role="group" aria-label="Music player">
@@ -768,6 +811,148 @@
         if (stitch) el.appendChild(stitch);
       });
 
+      // ---------- Clouds ----------
+      // Painted once each to match the painting's own background: a flat, patchy grey wash
+      // with blotches, pale flecks and a slightly darker dried edge, no shading.
+      // CSS drifts them across, at different speeds and heights.
+      (function () {
+        var layer = document.querySelector('.clouds');
+        var stageEl = document.querySelector('.stage');
+        var GREY = '150, 154, 166', DARK = '108, 112, 128';
+        var dpr = 1; // soft washes: no need for retina pixels, and a quarter of the memory
+        var vw = window.innerWidth;
+        var phone = vw < 700;
+
+        function rand(a, b) { return a + Math.random() * (b - a); }
+
+        // A lumpy circle, like a blot of wash
+        function puff(path, x, y, r) {
+          var n = 14, pts = [];
+          for (var i = 0; i < n; i++) {
+            var a = i / n * Math.PI * 2, rr = r * rand(.88, 1.08);
+            pts.push([x + Math.cos(a) * rr, y + Math.sin(a) * rr]);
+          }
+          path.moveTo((pts[0][0] + pts[n - 1][0]) / 2, (pts[0][1] + pts[n - 1][1]) / 2);
+          for (i = 0; i < n; i++) {
+            var p = pts[i], q = pts[(i + 1) % n];
+            path.quadraticCurveTo(p[0], p[1], (p[0] + q[0]) / 2, (p[1] + q[1]) / 2);
+          }
+        }
+
+        function canvasFor(w, h) {
+          var c = document.createElement('canvas');
+          c.width = Math.round(w * dpr);
+          c.height = Math.round(h * dpr);
+          var ctx = c.getContext('2d');
+          ctx.scale(dpr, dpr);
+          return ctx;
+        }
+
+        // Blotches of the same wash, darker (source-atop) or lifted out (destination-out)
+        function blotches(ctx, w, h, count, op, color, lo, hi) {
+          ctx.globalCompositeOperation = op;
+          for (var k = 0; k < count; k++) {
+            var b = new Path2D();
+            puff(b, rand(0, w), rand(0, h), w * rand(.03, .08));
+            ctx.fillStyle = 'rgba(' + color + ', ' + rand(lo, hi).toFixed(2) + ')';
+            ctx.fill(b);
+          }
+        }
+
+        function paint(w) {
+          var h = Math.round(w * .5);
+          var ctx = canvasFor(w, h);
+          var c = ctx.canvas;
+
+          var base = h * .8, puffs = [], n = Math.round(rand(7, 11));
+          for (var i = 0; i < n; i++) {
+            var t = (i + .5) / n, bell = Math.sin(t * Math.PI);
+            var r = w * rand(.06, .09) * (.6 + bell);
+            puffs.push([w * (.1 + t * .8) + rand(-.02, .02) * w, base - r * rand(.3, .75) - bell * h * rand(.04, .16), r]);
+          }
+
+          // Only above a wavy bottom edge
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.lineTo(w, 0);
+          for (var x = w; x >= 0; x -= w / 9) ctx.lineTo(x, base + rand(-1, 1) * h * .05);
+          ctx.closePath();
+          ctx.clip();
+
+          var shape = new Path2D();
+          puffs.forEach(function (p) { puff(shape, p[0], p[1], p[2]); });
+          ctx.fillStyle = 'rgba(' + GREY + ', .2)';
+          ctx.fill(shape);
+
+          blotches(ctx, w, h, n * 3, 'source-atop', DARK, .04, .1);
+          blotches(ctx, w, h, n * 3, 'destination-out', '0, 0, 0', .15, .45);
+
+          // Pale flecks, like the painting's
+          ctx.globalCompositeOperation = 'destination-out';
+          for (var k = 0; k < w * .7; k++) {
+            ctx.fillStyle = 'rgba(0, 0, 0, ' + rand(.2, .5).toFixed(2) + ')';
+            ctx.beginPath();
+            ctx.arc(rand(0, w), rand(0, h), rand(.6, 2), 0, Math.PI * 2);
+            ctx.fill();
+          }
+
+          // The dried edge: the shape minus a blurred copy of itself leaves just its outer rim
+          var rim = canvasFor(w, h);
+          rim.fill(shape);
+          rim.globalCompositeOperation = 'destination-out';
+          rim.filter = 'blur(' + Math.max(2, w / 140).toFixed(1) + 'px)';
+          rim.fill(shape);
+          rim.filter = 'none';
+          rim.globalCompositeOperation = 'source-in';
+          rim.fillStyle = 'rgb(' + DARK + ')';
+          rim.fillRect(0, 0, w, h);
+          ctx.globalCompositeOperation = 'source-over';
+          ctx.globalAlpha = .2;
+          ctx.drawImage(rim.canvas, 0, 0, w, h);
+          ctx.globalAlpha = 1;
+
+          c.style.width = w / vw * 100 + 'vw';
+          return c;
+        }
+
+        // Spread them over the sky: one per band, shuffled, the top of the screen. Speeds spread
+        // wide, from barely moving to brisk: the smallest are far off and slowest and faintest,
+        // the biggest near, fastest and in front.
+        var count = phone ? 3 : 5;
+        var bands = [], widths = [];
+        for (var i = 0; i < count; i++) {
+          bands.push(i);
+          widths.push(phone ? vw * rand(.85, 1.15) : Math.min(900, Math.max(340, vw * rand(.34, .52))));
+        }
+        bands.sort(function () { return Math.random() - .5; });
+        widths.sort(function (a, b) { return a - b; });
+        bands.forEach(function (band, i) {
+          var t = count > 1 ? i / (count - 1) : .5;
+          var w = widths[i];
+          var c = paint(w);
+          var speed = (phone ? 3 : 4) * Math.pow(phone ? 10 : 11, t) * rand(.9, 1.1); // px a second
+          var dur = (vw + w) / speed;
+          c.style.top = (phone ? -4 : -6) + band * (phone ? 10 : 8) + rand(-2, 2) + '%';
+          c.style.opacity = (.6 + .4 * t).toFixed(2);
+          c.style.setProperty('--dur', dur.toFixed(1) + 's');
+          c.style.setProperty('--delay', -rand(.1, .9) * dur + 's');
+          layer.appendChild(c);
+        });
+
+        // Keep the cut-out on the sleeper, sized to its deepest breath (breathe: scale(1.007, 1.016)
+        // from 40% 100%) so clouds never cross its back as it inhales
+        function place() {
+          var r = stageEl.getBoundingClientRect();
+          var bw = r.width * 1.007, bh = r.height * 1.016;
+          layer.style.setProperty('--sx', r.left - (bw - r.width) * .4 + 'px');
+          layer.style.setProperty('--sy', r.top - (bh - r.height) + 'px');
+          layer.style.setProperty('--sw', bw + 'px');
+          layer.style.setProperty('--sh', bh + 'px');
+        }
+        place();
+        window.addEventListener('resize', place);
+      })();
+
       // ---------- Birds and butterflies ----------
       // Distant brush-stroke birds drift across the open paper, behind the sleeper.
       // Small watercolor butterflies wander in front and now and then rest on an ear,
@@ -788,7 +973,6 @@
         var sleeper = new Image();
         sleeper.src = 'the-big-sleep/breath-mask.png';
 
-        var INK = '43, 36, 26';
         var PALETTES = [
           { fill: '184, 137, 42', edge: '112, 76, 18' },   // the sleeper's ochre
           { fill: '163, 40, 52', edge: '106, 10, 22' },    // the title's red
@@ -834,14 +1018,18 @@
 
         // ----- Butterflies -----
 
-        // Paint one wing (the right one; the left is its mirror) once, in layered washes.
+        // Paint one wing (the right one; the left is its mirror) once, in the painting's style:
+        // a mottled fill of blotches and lifted-out flecks, shaded toward the body, with a ragged
+        // near-black edge like the sleeper's.
+        var OUTLINE = '30, 23, 10';
+
         function wingSprite(pal, R) {
           var c = document.createElement('canvas');
-          c.width = Math.ceil(1.1 * R * dpr);
-          c.height = Math.ceil(1.65 * R * dpr);
+          c.width = Math.ceil(1.16 * R * dpr);
+          c.height = Math.ceil(1.72 * R * dpr);
           var g = c.getContext('2d');
           g.scale(R * dpr, R * dpr);
-          g.translate(.05, .9);
+          g.translate(.08, .93);
 
           function fore(j) {
             function o() { return (Math.random() - .5) * 2 * j; }
@@ -863,39 +1051,67 @@
             g.closePath();
           }
 
-          [hind, fore].forEach(function (shape) {
-            // Overlapping washes: soft, uneven edges and a deeper middle.
-            for (var k = 0; k < 4; k++) {
-              shape(.035);
-              g.fillStyle = 'rgba(' + pal.fill + ', .22)';
+          // Angular patches, like the painting's cut-out watercolor blotches
+          function blots(count, color, lo, hi, rlo, rhi) {
+            for (var k = 0; k < count; k++) {
+              var x = rand(0, 1), y = rand(-.9, .7), r = rand(rlo, rhi), n = 5 + Math.floor(rand(0, 3));
+              g.fillStyle = 'rgba(' + color + ', ' + rand(lo, hi).toFixed(2) + ')';
+              g.beginPath();
+              for (var v = 0; v < n; v++) {
+                var a = v / n * Math.PI * 2 + rand(-.3, .3), rr = r * rand(.6, 1.2);
+                g.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr);
+              }
+              g.closePath();
               g.fill();
             }
-            // Pigment pools at the edge as it dries.
+          }
+
+          [hind, fore].forEach(function (shape) {
             shape(0);
-            g.lineWidth = .035;
-            g.strokeStyle = 'rgba(' + pal.edge + ', .42)';
-            g.stroke();
+            g.fillStyle = 'rgb(' + pal.fill + ')';
+            g.fill();
             g.save();
             g.clip();
-            var near = g.createRadialGradient(0, 0, 0, 0, 0, .55);
-            near.addColorStop(0, 'rgba(' + pal.edge + ', .35)');
-            near.addColorStop(1, 'rgba(' + pal.edge + ', 0)');
+            blots(14, pal.edge, .35, .7, .06, .16);
+            blots(8, '250, 232, 170', .25, .45, .04, .1);
+            var near = g.createRadialGradient(0, 0, 0, 0, 0, .6);
+            near.addColorStop(0, 'rgba(' + OUTLINE + ', .65)');
+            near.addColorStop(1, 'rgba(' + OUTLINE + ', 0)');
             g.fillStyle = near;
             g.fillRect(-.1, -1, 1.2, 1.8);
             if (shape === fore) {
               var tip = g.createRadialGradient(.86, -.66, 0, .86, -.66, .32);
-              tip.addColorStop(0, 'rgba(' + pal.edge + ', .45)');
-              tip.addColorStop(1, 'rgba(' + pal.edge + ', 0)');
+              tip.addColorStop(0, 'rgba(' + OUTLINE + ', .55)');
+              tip.addColorStop(1, 'rgba(' + OUTLINE + ', 0)');
               g.fillStyle = tip;
               g.fillRect(.4, -1, .8, .8);
               // Two spots lifted back out to the paper
-              g.fillStyle = 'rgba(236, 234, 226, .6)';
+              g.fillStyle = 'rgba(236, 234, 226, .5)';
               g.beginPath();
               g.arc(.78, -.62, .055, 0, Math.PI * 2);
               g.arc(.66, -.5, .04, 0, Math.PI * 2);
               g.fill();
             }
+            blots(26, '240, 236, 222', .25, .5, .008, .02);
+            // Shadow soaking in from the edge, unevenly
+            g.lineJoin = 'round';
+            for (var k = 0; k < 3; k++) {
+              shape(.03);
+              g.lineWidth = rand(.12, .22);
+              g.strokeStyle = 'rgba(' + OUTLINE + ', .22)';
+              g.stroke();
+            }
             g.restore();
+            // A broken, ragged near-black edge
+            for (k = 0; k < 2; k++) {
+              shape(.015);
+              g.setLineDash([rand(.2, .5), rand(.01, .03)]);
+              g.lineDashOffset = rand(0, 1);
+              g.lineWidth = k ? .035 : .06;
+              g.strokeStyle = 'rgba(' + OUTLINE + ', ' + (k ? .55 : .8) + ')';
+              g.stroke();
+            }
+            g.setLineDash([]);
           });
           return c;
         }
@@ -1050,15 +1266,15 @@
           for (var side = -1; side <= 1; side += 2) {
             ctx.save();
             ctx.scale(side * sx, 1);
-            ctx.drawImage(f.sprite, -.05 * R, -.9 * R, 1.1 * R, 1.65 * R);
+            ctx.drawImage(f.sprite, -.08 * R, -.93 * R, 1.16 * R, 1.72 * R);
             ctx.restore();
           }
-          ctx.fillStyle = 'rgba(' + INK + ', .8)';
+          ctx.fillStyle = 'rgba(' + OUTLINE + ', .92)';
           ctx.beginPath();
-          ctx.ellipse(0, -.02 * R, .06 * R, .42 * R, 0, 0, Math.PI * 2);
+          ctx.ellipse(0, -.02 * R, .07 * R, .42 * R, 0, 0, Math.PI * 2);
           ctx.fill();
-          ctx.strokeStyle = 'rgba(' + INK + ', .6)';
-          ctx.lineWidth = Math.max(.6, R * .03);
+          ctx.strokeStyle = 'rgba(' + OUTLINE + ', .75)';
+          ctx.lineWidth = Math.max(.7, R * .035);
           ctx.beginPath();
           ctx.moveTo(-.02 * R, -.38 * R);
           ctx.quadraticCurveTo(-.12 * R, -.62 * R, -.24 * R, -.74 * R);
@@ -1096,12 +1312,12 @@
           var ls = lanes();
           if (!ls.length) return;
           var lane = ls[Math.floor(Math.random() * ls.length)];
-          var size = Math.max(12, stage.s * rand(.022, .04));
+          var size = Math.max(18, stage.s * rand(.035, .06));
           if (lane[1] - lane[0] < size * 2) return; // too tight: it would stray out of the lane
           var y = rand(lane[0] + size, lane[1] - size);
           var xs = span(y, size);
           var room = xs[1] - xs[0];
-          if (room < size * 10) return;
+          if (room < size * 8) return;
           var dir = Math.random() < .5 ? 1 : -1;
           var speed = rand(14, 26) * size / 16;
           var x = dir > 0 ? xs[0] + size + rand(0, room * .45) : xs[1] - size - rand(0, room * .45);
@@ -1141,6 +1357,30 @@
           }
         }
 
+        // Birds share one mottled umber, like the sleeper's darkest patches
+        var birdFill = (function () {
+          var c = document.createElement('canvas');
+          c.width = c.height = 48;
+          var g = c.getContext('2d');
+          g.fillStyle = 'rgb(62, 49, 22)';
+          g.fillRect(0, 0, 48, 48);
+          for (var k = 0; k < 40; k++) {
+            g.fillStyle = Math.random() < .5 ? 'rgba(138, 104, 36, .4)' : 'rgba(18, 13, 5, .45)';
+            g.beginPath();
+            g.arc(rand(0, 48), rand(0, 48), rand(2, 6), 0, Math.PI * 2);
+            g.fill();
+          }
+          return ctx.createPattern(c, 'repeat');
+        })();
+
+        function birdWing(b, side, s, w) {
+          ctx.beginPath();
+          ctx.moveTo(b.x, b.y + s * .05);
+          ctx.quadraticCurveTo(b.x + side * s * .2, b.y - s * .17 - w * s * .12, b.x + side * s * .52, b.y - w * s * .2);
+          ctx.quadraticCurveTo(b.x + side * s * .24, b.y - s * .05 - w * s * .1, b.x, b.y + s * .13);
+          ctx.closePath();
+        }
+
         function drawBird(b) {
           var age = now - b.born;
           if (age < 0) return;
@@ -1148,21 +1388,19 @@
           if (fade <= 0) return;
           var s = b.size;
           var w = b.lift;
-          var a = fade * Math.min(.7, .4 + .25 * (s - 12) / 20);
-          // A loose brush stroke per wing: thick at the body, thin at the tip, laid twice.
-          for (var pass = 0; pass < 2; pass++) {
-            var ox = pass ? .5 : 0;
-            var oy = pass ? .35 : 0;
-            ctx.fillStyle = 'rgba(' + INK + ',' + (pass ? a * .5 : a) + ')';
-            for (var side = -1; side <= 1; side += 2) {
-              ctx.beginPath();
-              ctx.moveTo(b.x + ox, b.y + s * .04 + oy);
-              ctx.quadraticCurveTo(b.x + side * s * .2 + ox, b.y - s * .14 - w * s * .12 + oy, b.x + side * s * .5 + ox, b.y - w * s * .2 + oy);
-              ctx.quadraticCurveTo(b.x + side * s * .22 + ox, b.y - s * .07 - w * s * .1 + oy, b.x + ox, b.y + s * .1 + oy);
-              ctx.closePath();
-              ctx.fill();
-            }
+          // A mottled body with a dark, slightly doubled edge, like the painting
+          if (birdFill.setTransform) birdFill.setTransform(new DOMMatrix([1, 0, 0, 1, b.x, b.y]));
+          ctx.globalAlpha = fade * .9;
+          ctx.lineJoin = 'round';
+          for (var side = -1; side <= 1; side += 2) {
+            birdWing(b, side, s, w);
+            ctx.fillStyle = birdFill;
+            ctx.fill();
+            ctx.lineWidth = Math.max(1, s * .045);
+            ctx.strokeStyle = 'rgba(' + OUTLINE + ', .85)';
+            ctx.stroke();
           }
+          ctx.globalAlpha = 1;
         }
 
         // ----- Loop -----
